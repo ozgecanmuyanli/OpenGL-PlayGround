@@ -14,13 +14,15 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 Shader* myShader;
 
-GLfloat vertices_triangle[] = {
+GLfloat vertices_square[] = {
 	-0.5f, -0.5f, 0.0f,
 	0.5f, -0.5f, 0.0f,
-	0.0f, 0.5f, 0.0f
+	0.5f, 0.5f, 0.0f,
+	-0.5f, 0.5f, 0.0f
 };
-GLuint indices_triangle[] = {
-	0, 1, 2
+GLuint indices_square[] = {
+	0, 1, 2,
+	2, 3, 0
 };
 
 //FUNCTIONS
@@ -39,20 +41,21 @@ void MainLoop()
 {
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
 
-	Mesh *triangle_object = new Mesh();
-	triangle_object->CreateMesh(vertices_triangle, indices_triangle, 9, 3);
+	Mesh * square_object = new Mesh();
+	square_object->CreateMesh(vertices_square, indices_square, 
+		sizeof(vertices_square)/sizeof(GLfloat), sizeof(indices_square)/sizeof(GLfloat));
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		myShader->use();
 
-		triangle_object->RenderMesh(); // draw
+		square_object->RenderMesh(); // draw
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	delete triangle_object;
+	delete square_object;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
