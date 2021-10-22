@@ -47,6 +47,7 @@ int main()
 void MainLoop()
 {
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
+	float angleOfLightPos = 0.0f;
 
 	Mesh * square_object = new Mesh();
 	square_object->CreateMesh(vertices_square, indices_square, 
@@ -59,6 +60,11 @@ void MainLoop()
 
 
 		ChangeObjectColor(square_object, glm::vec3(1.0f, 0.0f, 0.0f));
+
+		// changes the light position along a circle (0,0,0. r=0.5)
+		angleOfLightPos = angleOfLightPos + 0.05f; // it increases each frame
+		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), angleOfLightPos);
+
 		square_object->RenderMesh(); // draw
 
 
