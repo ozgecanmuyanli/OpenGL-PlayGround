@@ -29,6 +29,13 @@ GLuint indices_square[] = {
 void MainLoop();
 int OpenWindow(int iWidth, int iHeight);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void ChangeObjectColor(Mesh* object, glm::vec3 color);
+
+void ChangeObjectColor(Mesh* object, glm::vec3 color)
+{
+	int objectColorLocation = glGetUniformLocation(myShader->ID, "objectColor");
+	glUniform3f(objectColorLocation, color.x, color.y, color.z);
+}
 
 int main()
 {
@@ -50,7 +57,10 @@ void MainLoop()
 		glClear(GL_COLOR_BUFFER_BIT);
 		myShader->use();
 
+
+		ChangeObjectColor(square_object, glm::vec3(1.0f, 0.0f, 0.0f));
 		square_object->RenderMesh(); // draw
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
