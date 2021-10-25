@@ -1,6 +1,7 @@
 add_executable(OpenGL-Playground 
 main.cpp
 Mesh.cpp
+Texture.cpp
 stb_image.cpp
 )
 

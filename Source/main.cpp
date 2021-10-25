@@ -6,6 +6,7 @@
 #include <iostream>
 #include "shader.h"
 #include "Mesh.h"
+#include "Texture.h"
 #include "stb_image.h"
 
 //VARIABLES
@@ -15,10 +16,10 @@ const unsigned int SCR_HEIGHT = 600;
 Shader* myShader;
 
 GLfloat vertices_square[] = {
-	-0.5f, -0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f,
-	0.5f, 0.5f, 0.0f,
-	-0.5f, 0.5f, 0.0f
+	-0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
+	0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
+	-0.5f, 0.5f, 0.0f, 1.0f, 0.0f
 };
 GLuint indices_square[] = {
 	0, 1, 2,
@@ -49,9 +50,12 @@ void MainLoop()
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
 	float angleOfLightPos = 0.0f;
 
-	Mesh * square_object = new Mesh();
+	Mesh *square_object = new Mesh();
 	square_object->CreateMesh(vertices_square, indices_square, 
 		sizeof(vertices_square)/sizeof(GLfloat), sizeof(indices_square)/sizeof(GLfloat));
+
+	Texture* texture_object = new Texture();
+	unsigned int texture = texture_object->LoadTexture("../../Textures/awesomeface.png");
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -64,6 +68,9 @@ void MainLoop()
 		// changes the light position along a circle (0,0,0. r=0.5)
 		angleOfLightPos = angleOfLightPos + 0.05f; // it increases each frame
 		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), angleOfLightPos);
+
+		texture_object->ActivateTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
 
 		square_object->RenderMesh(); // draw
 

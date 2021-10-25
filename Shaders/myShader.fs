@@ -2,8 +2,11 @@
 out vec4 FragColor;
 
 in vec3 oPos;
+in vec2 oTextureCoord;
+
 uniform vec3 objectColor;
 uniform float lightAngle;
+uniform sampler2D texture1;
 
 void main()
 {
@@ -17,5 +20,6 @@ void main()
 	float lightIntense = dot(lightDirection, vertexNormal);
 	vec3 finalColor = objectColor * lightIntense;
 
-	FragColor = vec4(finalColor, 1.0f); // output color and alpha
+	//FragColor = vec4(finalColor, 1.0f); // output color and alpha
+	FragColor = lightIntense * texture(texture1, oTextureCoord);
 }
