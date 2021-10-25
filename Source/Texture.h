@@ -7,7 +7,7 @@ class Texture
 public:
    Texture();
 
-   int LoadTexture(char *texture_path);
+   void LoadTexture(char *texture_path);
    void ActivateTexture(GLenum texture_unit);
 
 private:

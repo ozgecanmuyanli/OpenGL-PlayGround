@@ -7,7 +7,7 @@ Texture::Texture()
 	int nrChannels = 0;
 }
 
-int Texture::LoadTexture(char *texture_path)
+void Texture::LoadTexture(char *texture_path)
 {
 	unsigned char* texture_data = stbi_load(texture_path, &texture_width, &texture_height, &nrChannels, 0);
 
@@ -20,7 +20,6 @@ int Texture::LoadTexture(char *texture_path)
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(texture_data);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	return texture;
 }
 
 void Texture::ActivateTexture(GLenum texture_unit)

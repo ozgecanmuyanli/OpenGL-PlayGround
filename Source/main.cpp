@@ -14,6 +14,7 @@ GLFWwindow* window;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 Shader* myShader;
+glm::mat4 modelMatrix;
 
 GLfloat vertices_square[] = {
 	-0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
@@ -55,25 +56,35 @@ void MainLoop()
 		sizeof(vertices_square)/sizeof(GLfloat), sizeof(indices_square)/sizeof(GLfloat));
 
 	Texture* texture_object = new Texture();
-	unsigned int texture = texture_object->LoadTexture("../../Textures/awesomeface.png");
+	texture_object->LoadTexture("../../Textures/awesomeface.png");
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		myShader->use();
 
-
+		// COLOR
 		ChangeObjectColor(square_object, glm::vec3(1.0f, 0.0f, 0.0f));
 
+		// LIGHT
 		// changes the light position along a circle (0,0,0. r=0.5)
 		angleOfLightPos = angleOfLightPos + 0.05f; // it increases each frame
 		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), angleOfLightPos);
 
+		// TEXTURE
 		texture_object->ActivateTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
 
-		square_object->RenderMesh(); // draw
+		// TRANSLATE - ROTATE - SCALE
+		modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::rotate(modelMatrix, glm::radians((float)glfwGetTime() * 30), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f, 0.0f, 0.0f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians((float)glfwGetTime() * 30), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.4f, 0.4f, 0.4f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
+		// DRAW
+		square_object->RenderMesh();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
