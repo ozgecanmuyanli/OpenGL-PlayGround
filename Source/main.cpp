@@ -4,6 +4,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "shader.h"
 #include "Mesh.h"
 #include "Texture.h"
@@ -14,15 +16,30 @@ GLFWwindow* window;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 Shader* myShader;
-glm::mat4 modelMatrix;
+#define OBJECTCOUNT 10
+glm::mat4 modelMatrix[OBJECTCOUNT];
+glm::vec3 objectColors[OBJECTCOUNT];
+glm::mat4 backgroundModelMatrix;
+
 
 GLfloat vertices_square[] = {
-	-0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
-	0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
-	-0.5f, 0.5f, 0.0f, 1.0f, 0.0f
+	-0.5f, -0.5f, 0.0f,
+	0.5f, -0.5f, 0.0f,
+	0.5f, 0.5f, 0.0f,
+	-0.5f, 0.5f, 0.0f
 };
 GLuint indices_square[] = {
+	0, 1, 2,
+	2, 3, 0
+};
+
+GLfloat vertices_background[] = {
+	-1.0f, -1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	1.0f, 1.0f, 0.0f,
+	-1.0f, 1.0f, 0.0f
+};
+GLuint indices_background[] = {
 	0, 1, 2,
 	2, 3, 0
 };
@@ -32,6 +49,36 @@ void MainLoop();
 int OpenWindow(int iWidth, int iHeight);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void ChangeObjectColor(Mesh* object, glm::vec3 color);
+float GetRandom(float min, float max);
+void CreateRandomModelMatrix();
+void CreateRandomColors();
+
+
+void CreateRandomModelMatrix()
+{
+	float scaleRatio;
+	for (unsigned int i = 0; i < OBJECTCOUNT; i++)
+	{
+		modelMatrix[i] = glm::mat4(1.0f);
+		modelMatrix[i] = glm::translate(modelMatrix[i], glm::vec3(GetRandom(-1.0f, 1.0f), GetRandom(-1.0f, 1.0f), 0.0f));
+		modelMatrix[i] = glm::rotate(modelMatrix[i], glm::radians(GetRandom(30.0f, 120.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
+		scaleRatio = GetRandom(0.2f, 0.5f);
+		modelMatrix[i] = glm::scale(modelMatrix[i], glm::vec3(scaleRatio, scaleRatio, scaleRatio));
+	}
+}
+
+void CreateRandomColors()
+{
+	for (unsigned int i = 0; i < OBJECTCOUNT; i++)
+	{
+		objectColors[i] = glm::vec3(GetRandom(0.0f, 1.0f), GetRandom(0.0f, 1.0f), GetRandom(0.0f, 1.0f));
+	}
+}
+
+float GetRandom(float min, float max)
+{
+	return ((float)rand() / ((float)RAND_MAX)) * (max-min) + min;
+}
 
 void ChangeObjectColor(Mesh* object, glm::vec3 color)
 {
@@ -41,50 +88,48 @@ void ChangeObjectColor(Mesh* object, glm::vec3 color)
 
 int main()
 {
+	srand(time(0));
 	OpenWindow(SCR_WIDTH, SCR_HEIGHT);
 	glClearColor(0.3, 0.2, 0.5, 1.0);
+
+	CreateRandomModelMatrix();
+	CreateRandomColors();
 	MainLoop();
 }
 
 void MainLoop()
 {
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
-	float angleOfLightPos = 0.0f;
+	float lightAngle = 0.0f;
 
 	Mesh *square_object = new Mesh();
 	square_object->CreateMesh(vertices_square, indices_square, 
 		sizeof(vertices_square)/sizeof(GLfloat), sizeof(indices_square)/sizeof(GLfloat));
 
-	Texture* texture_object = new Texture();
-	texture_object->LoadTexture("../../Textures/awesomeface.png");
+	Mesh* backgroung_object = new Mesh();
+	backgroung_object->CreateMesh(vertices_background, indices_background,
+		sizeof(vertices_background) / sizeof(GLfloat), sizeof(indices_background) / sizeof(GLfloat));
 
 	while (!glfwWindowShouldClose(window))
 	{
 		glClear(GL_COLOR_BUFFER_BIT);
 		myShader->use();
 
-		// COLOR
-		ChangeObjectColor(square_object, glm::vec3(1.0f, 0.0f, 0.0f));
+		backgroundModelMatrix = glm::mat4(1.0f);
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(backgroundModelMatrix));
+		ChangeObjectColor(backgroung_object, glm::vec3(1.0f, 1.0f, 1.0f));
+		backgroung_object->RenderMesh();
 
-		// LIGHT
-		// changes the light position along a circle (0,0,0. r=0.5)
-		angleOfLightPos = angleOfLightPos + 0.05f; // it increases each frame
-		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), angleOfLightPos);
+		lightAngle = lightAngle + 0.05f;
+		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), lightAngle);
 
-		// TEXTURE
-		texture_object->ActivateTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
-
-		// TRANSLATE - ROTATE - SCALE
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::rotate(modelMatrix, glm::radians((float)glfwGetTime() * 30), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f, 0.0f, 0.0f));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians((float)glfwGetTime() * 30), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.4f, 0.4f, 0.4f));
-		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-
-		// DRAW
-		square_object->RenderMesh();
+		// 1- send each model matrix, 2- set a color, 3- draw
+		for (unsigned int i = 0; i <= OBJECTCOUNT; i++)
+		{
+			glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix[i]));
+			ChangeObjectColor(square_object, objectColors[i]);
+			square_object->RenderMesh();
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
