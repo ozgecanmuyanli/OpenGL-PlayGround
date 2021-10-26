@@ -16,32 +16,55 @@ GLFWwindow* window;
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 Shader* myShader;
+
 #define OBJECTCOUNT 10
 glm::mat4 modelMatrix[OBJECTCOUNT];
 glm::vec3 objectColors[OBJECTCOUNT];
 glm::mat4 backgroundModelMatrix;
 
+GLfloat cubeVertices[] =
+{
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-GLfloat vertices_square[] = {
-	-0.5f, -0.5f, 0.0f,
-	0.5f, -0.5f, 0.0f,
-	0.5f, 0.5f, 0.0f,
-	-0.5f, 0.5f, 0.0f
-};
-GLuint indices_square[] = {
-	0, 1, 2,
-	2, 3, 0
-};
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+	-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
 
-GLfloat vertices_background[] = {
-	-1.0f, -1.0f, 0.0f,
-	1.0f, -1.0f, 0.0f,
-	1.0f, 1.0f, 0.0f,
-	-1.0f, 1.0f, 0.0f
-};
-GLuint indices_background[] = {
-	0, 1, 2,
-	2, 3, 0
+	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+	0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+	-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
 
 //FUNCTIONS
@@ -53,16 +76,15 @@ float GetRandom(float min, float max);
 void CreateRandomModelMatrix();
 void CreateRandomColors();
 
-
 void CreateRandomModelMatrix()
 {
 	float scaleRatio;
 	for (unsigned int i = 0; i < OBJECTCOUNT; i++)
 	{
 		modelMatrix[i] = glm::mat4(1.0f);
-		modelMatrix[i] = glm::translate(modelMatrix[i], glm::vec3(GetRandom(-1.0f, 1.0f), GetRandom(-1.0f, 1.0f), 0.0f));
+		modelMatrix[i] = glm::translate(modelMatrix[i], glm::vec3(GetRandom(-1.0f, 5.0f), GetRandom(-1.0f, 5.0f), GetRandom(-1.0f, 5.0f)));
 		modelMatrix[i] = glm::rotate(modelMatrix[i], glm::radians(GetRandom(30.0f, 120.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
-		scaleRatio = GetRandom(0.2f, 0.5f);
+		scaleRatio = GetRandom(0.2f, 0.7f);
 		modelMatrix[i] = glm::scale(modelMatrix[i], glm::vec3(scaleRatio, scaleRatio, scaleRatio));
 	}
 }
@@ -90,8 +112,7 @@ int main()
 {
 	srand(time(0));
 	OpenWindow(SCR_WIDTH, SCR_HEIGHT);
-	glClearColor(0.3, 0.2, 0.5, 1.0);
-
+	glClearColor(0.1, 0.4, 0.1, 1.0);
 	CreateRandomModelMatrix();
 	CreateRandomColors();
 	MainLoop();
@@ -99,42 +120,49 @@ int main()
 
 void MainLoop()
 {
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
 	float lightAngle = 0.0f;
+	
+	Mesh* cubeObject = new Mesh();
+	cubeObject->CreateMesh(cubeVertices, 0, 180, 0);
 
-	Mesh *square_object = new Mesh();
-	square_object->CreateMesh(vertices_square, indices_square, 
-		sizeof(vertices_square)/sizeof(GLfloat), sizeof(indices_square)/sizeof(GLfloat));
-
-	Mesh* backgroung_object = new Mesh();
-	backgroung_object->CreateMesh(vertices_background, indices_background,
-		sizeof(vertices_background) / sizeof(GLfloat), sizeof(indices_background) / sizeof(GLfloat));
+	Texture* texture = new Texture();
+	texture->LoadTexture("../../Textures/wood.png");
 
 	while (!glfwWindowShouldClose(window))
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		myShader->use();
+		
+		glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-		backgroundModelMatrix = glm::mat4(1.0f);
-		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(backgroundModelMatrix));
-		ChangeObjectColor(backgroung_object, glm::vec3(1.0f, 1.0f, 1.0f));
-		backgroung_object->RenderMesh();
+		const float radius = 10.0f;
+		float camX = sin(glfwGetTime()) * radius;
+		float camZ = cos(glfwGetTime()) * radius;
+		glm::mat4 viewMatrix = glm::lookAt(glm::vec3(glfwGetTime(), glfwGetTime(), 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
-		lightAngle = lightAngle + 0.05f;
-		glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), lightAngle);
+		texture->ActivateTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
+		cubeObject->RenderMesh();
+
+		//lightAngle = lightAngle + 0.05f;
+		//glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), lightAngle);
 
 		// 1- send each model matrix, 2- set a color, 3- draw
 		for (unsigned int i = 0; i <= OBJECTCOUNT; i++)
 		{
 			glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix[i]));
-			ChangeObjectColor(square_object, objectColors[i]);
-			square_object->RenderMesh();
+			cubeObject->RenderMesh();
 		}
-
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	delete square_object;
+	delete cubeObject;
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
