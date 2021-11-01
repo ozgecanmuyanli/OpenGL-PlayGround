@@ -34,8 +34,8 @@ int Window::Initialise()
       glfwTerminate();
       return 1;
    }
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
    mainWindow = glfwCreateWindow(width, height, "My window", NULL, NULL);
    if (!mainWindow)

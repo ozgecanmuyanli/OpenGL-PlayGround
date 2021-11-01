@@ -18,6 +18,7 @@
 Window mainWindow;
 Camera camera;
 Shader* myShader;
+Shader* lineShader;
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 float fov = 45.0f;
@@ -96,8 +97,11 @@ void MainLoop()
 {
 	//variables
 	float lightAngle = 0.0f;
+	unsigned int lineVAO;
+	glGenVertexArrays(1, &lineVAO);
 
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
+	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	
 	Mesh* cubeObject = new Mesh();
 	cubeObject->CreateMesh(cubeVertices, 0, 180, 0);
@@ -105,7 +109,12 @@ void MainLoop()
 	Texture* texture = new Texture();
 	texture->LoadTexture("../../Textures/wood.png");
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+	camera = Camera(glm::vec3(0.5f, 0.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
+
+	//PROJECTION
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
+		(GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(),
+		0.1f, 100.0f);
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -113,25 +122,34 @@ void MainLoop()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime); 
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange()); 
-
+		camera.keyControl(mainWindow.getsKeys(), deltaTime);
+		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		myShader->use();
-		
-		glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov), 
-			(GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), 
-			0.1f, 100.0f);
-		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
-		const float radius = 10.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
-		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		// DRAW LINE 
+		lineShader->use();
+
+		glUniformMatrix4fv(glGetUniformLocation(lineShader->ID, "projectionMatrix"),
+			1, GL_FALSE, glm::value_ptr(projectionMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(lineShader->ID, "viewMatrix"),
+			1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+
+		glBindVertexArray(lineVAO);
+		glDrawArrays(GL_LINES, 0, 6);
+		glBindVertexArray(0);
+		// END DRAW LINE
+		
+		// MAIN PROGRAM
+		myShader->use();
+
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "projectionMatrix"),
+			1, GL_FALSE, glm::value_ptr(projectionMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "viewMatrix"),
+			1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+
 
 		texture->ActivateTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
-		cubeObject->RenderMesh();
 
 		//lightAngle = lightAngle + 0.05f;
 		//glUniform1f(glGetUniformLocation(myShader->ID, "lightAngle"), lightAngle);
@@ -139,16 +157,17 @@ void MainLoop()
 		// 1- send each model matrix, 2- set a color, 3- draw
 		for (unsigned int i = 0; i <= OBJECTCOUNT; i++)
 		{
-			glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix[i]));
+			glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"),
+				1, GL_FALSE, glm::value_ptr(modelMatrix[i]));
 			cubeObject->RenderMesh();
 		}
 		mainWindow.swapBuffers();
 	}
-	delete cubeObject;
+	delete cubeObject, texture;
 }
 
 
-// FUNCTION IMPLEMENTATIONSü
+// FUNCTION IMPLEMENTATIONS
 void CreateRandomModelMatrix()
 {
 	float scaleRatio;
