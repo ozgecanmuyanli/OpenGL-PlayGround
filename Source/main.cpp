@@ -28,11 +28,25 @@ float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 glm::mat4 modelMatrix;
 
+GLfloat groundVertices[] =
+{
+	0.0f, -0.1f, 0.0f, 0.0f, 100.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, -0.1f, 999.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+	999.0f, -0.1f, 999.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+	999.0f, -0.1f, 0.0f, 100.0f, 100.0f, 0.0f, 1.0f, 0.0f
+};
+GLuint groundIndices[] =
+{
+	0, 3, 2,
+	2, 1, 0
+};
+
 // FUNCTIONS
 void MainLoop();
 void ChangeObjectColor(Mesh* object, glm::vec3 color);
 float GetRandom(float min, float max);
 void CreateRandomColors();
+void Move(glm::mat4 modelMatrix, float dx, float timInSin, float directionX, float directionY, float directionZ);
 
 void main()
 {
@@ -50,25 +64,28 @@ void MainLoop()
 {
 	//variables
 	float lightAngle = 0.0f;
-	unsigned int lineVAO;
+	float dx = 0.0f;
+	unsigned int lineVAO, groundVAO, groundVBO, groundIBO;
 	glGenVertexArrays(1, &lineVAO);
 
 	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
+
+	Mesh* groundObject = new Mesh();
+	groundObject->CreateMesh(groundVertices, groundIndices, 32, 6);
 
 	Texture* texture = new Texture();
 	texture->LoadTexture("../../Textures/wood.png");
 
 	camera = Camera(glm::vec3(0.5f, 0.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
 
-	//PROJECTION
+	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
 		(GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(),
 		0.1f, 100.0f);
 
 	while (!mainWindow.getShouldClose())
 	{
-		modelMatrix = glm::mat4(1.0f);
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -93,15 +110,28 @@ void MainLoop()
 		// MAIN PROGRAM
 		myShader->use();
 
+		modelMatrix = glm::mat4(1.0f);
+		
+		texture->ActivateTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
+
 		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "projectionMatrix"),
 			1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "viewMatrix"),
 			1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"),
 			1, GL_FALSE, glm::value_ptr(modelMatrix));
+		groundObject->RenderMesh();
 
-		texture->ActivateTexture(GL_TEXTURE0);
-		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
+
+		// MOVE
+		float timeInSin = sin(glfwGetTime() * 5.0f);
+		if (timeInSin < 0)
+		{
+			timeInSin = 0;
+		}
+		dx = dx + (timeInSin * deltaTime);
+		Move(modelMatrix, dx, timeInSin, 0.0f, 1.0f, 0.0f);
 
 		// DRAW MODEL
 		model->Draw(*myShader);
@@ -121,4 +151,12 @@ void ChangeObjectColor(Mesh* object, glm::vec3 color)
 {
 	int objectColorLocation = glGetUniformLocation(myShader->ID, "objectColor");
 	glUniform3f(objectColorLocation, color.x, color.y, color.z);
+}
+
+void Move(glm::mat4 modelMatrix, float dx, float timeInSin, float directionX, float directionY, float directionZ)
+{
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(dx, timeInSin, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(directionX, directionY, directionZ));
+	glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"),
+		1, GL_FALSE, glm::value_ptr(modelMatrix));
 }

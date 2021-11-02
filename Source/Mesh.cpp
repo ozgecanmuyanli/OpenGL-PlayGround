@@ -40,8 +40,8 @@ void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int num
 void Mesh::RenderMesh()
 {
 	glBindVertexArray(VAO);
-	//glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 

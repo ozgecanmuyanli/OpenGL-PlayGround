@@ -6,6 +6,7 @@ layout (location=2) in vec3 aVertexNormal;
 out vec3 oPosInWorldSpace;
 out vec2 oTextureCoord;
 out vec3 oVertexNormal;
+out vec3 oPos;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -13,9 +14,9 @@ uniform mat4 projectionMatrix;
 
 void main()
 {
+	oPos = aPos;
 	oTextureCoord = aTextureCoord;
-	oVertexNormal = aVertexNormal;
-	oVertexNormal = vec3(vec4(modelMatrix * vec4(oVertexNormal, 0.0f)).xyz); 
+	oVertexNormal = vec3(vec4(modelMatrix * vec4(aVertexNormal, 0.0f)).xyz); 
 	oPosInWorldSpace = vec3(vec4(modelMatrix * vec4(aPos, 1.0f)).xyz);
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPos, 1.0);	
 }
