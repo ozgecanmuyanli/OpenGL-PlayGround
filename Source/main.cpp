@@ -46,7 +46,6 @@ void MainLoop();
 void ChangeObjectColor(Mesh* object, glm::vec3 color);
 float GetRandom(float min, float max);
 void CreateRandomColors();
-void Move(glm::mat4 modelMatrix, float dx, float timInSin, float directionX, float directionY, float directionZ);
 
 void main()
 {
@@ -65,6 +64,8 @@ void MainLoop()
 	//variables
 	float lightAngle = 0.0f;
 	float dx = 0.0f;
+	float walkingX = 0.0f;
+	float walkingZ = 0.0f;
 	unsigned int lineVAO, groundVAO, groundVBO, groundIBO;
 	glGenVertexArrays(1, &lineVAO);
 
@@ -93,6 +94,7 @@ void MainLoop()
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		modelMatrix = glm::mat4(1.0f);
 
 		// DRAW LINE 
 		lineShader->use();
@@ -110,8 +112,6 @@ void MainLoop()
 		// MAIN PROGRAM
 		myShader->use();
 
-		modelMatrix = glm::mat4(1.0f);
-		
 		texture->ActivateTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(myShader->ID, "texture1"), 0);
 
@@ -123,22 +123,38 @@ void MainLoop()
 			1, GL_FALSE, glm::value_ptr(modelMatrix));
 		groundObject->RenderMesh();
 
-
-		// MOVE
-		float timeInSin = sin(glfwGetTime() * 5.0f);
-		if (timeInSin < 0)
+		// BUNNY MOVEMENT
+		bool* keys = mainWindow.getsKeys();
+		if (keys[GLFW_KEY_SPACE])
 		{
-			timeInSin = 0;
+			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.5f, 0.0f));
 		}
-		dx = dx + (timeInSin * deltaTime);
-		Move(modelMatrix, dx, timeInSin, 0.0f, 1.0f, 0.0f);
+		if (keys[GLFW_KEY_RIGHT])
+		{
+			walkingX += 0.01f;
+		}
+		if (keys[GLFW_KEY_LEFT])
+		{
+			walkingX -= 0.01f;
+		}
+		if (keys[GLFW_KEY_DOWN])
+		{
+			walkingZ += 0.01f;
+		}
+		if (keys[GLFW_KEY_UP])
+		{
+			walkingZ -= 0.01f;
+		}
+
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
+		glUniformMatrix4fv(glGetUniformLocation(myShader->ID, "modelMatrix"),
+			1, GL_FALSE, glm::value_ptr(modelMatrix));
 
 		// DRAW MODEL
 		model->Draw(*myShader);
-
 		mainWindow.swapBuffers();
 	}
-	delete texture;
+	delete texture, groundObject;
 }
 
 // FUNCTION IMPLEMENTATIONS
