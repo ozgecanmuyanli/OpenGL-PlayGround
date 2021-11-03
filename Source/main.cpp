@@ -123,6 +123,9 @@ void MainLoop()
 			1, GL_FALSE, glm::value_ptr(modelMatrix));
 		groundObject->RenderMesh();
 
+		glUniform3fv(glGetUniformLocation(myShader->ID, "viewPos"), //send cam pos for specular light
+			1, glm::value_ptr(camera.getCameraPosition()));
+
 		// BUNNY MOVEMENT
 		bool* keys = mainWindow.getsKeys();
 		if (keys[GLFW_KEY_SPACE])
