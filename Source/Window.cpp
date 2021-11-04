@@ -50,7 +50,7 @@ int Window::Initialise()
    //glfwSwapInterval(1);
 
    createCallbacks();
-   glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+   //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
    int gladSucces = 0;
    gladSucces = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -110,16 +110,25 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 {
    Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
-   if (theWindow->mouseFirstMoved)
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
    {
+      
+      if (theWindow->mouseFirstMoved)
+      {
+         theWindow->lastX = xPos;
+         theWindow->lastY = yPos;
+         theWindow->mouseFirstMoved = false;
+      }
+      theWindow->xChange = xPos - theWindow->lastX;
+      theWindow->yChange = theWindow->lastY - yPos;
       theWindow->lastX = xPos;
       theWindow->lastY = yPos;
-      theWindow->mouseFirstMoved = false;
+      
    }
-   theWindow->xChange = xPos - theWindow->lastX;
-   theWindow->yChange = theWindow->lastY - yPos;
-   theWindow->lastX = xPos;
-   theWindow->lastY = yPos;
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+   {
+      theWindow->mouseFirstMoved = true;
+   }
 }
 Window::~Window() 
 {
