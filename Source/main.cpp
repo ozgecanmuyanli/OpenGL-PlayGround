@@ -47,7 +47,7 @@ void MainLoop();
 float GetRandom(float min, float max);
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight);
 void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix);
-void DrawModel(Model* model);
+void DrawModel(Model* model, float walkingX, float walkingZ);
 void DrawAxis(glm::mat4 projectionMatrix);
 
 void main()
@@ -63,6 +63,9 @@ void main()
 
 void MainLoop()
 {
+	float walkingX = 0.0f;
+	float walkingZ = 0.0f;
+
 	modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
@@ -121,7 +124,30 @@ void MainLoop()
 		modelShader->setMat4("modelMatrix", modelMatrix);
 		modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
 
-		DrawModel(model);
+
+		// MODEL MOVEMENT
+		if (keys[GLFW_KEY_SPACE])
+		{
+			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.5f, 0.0f));
+		}
+		if (keys[GLFW_KEY_RIGHT])
+		{
+			walkingX += 0.01f;
+		}
+		if (keys[GLFW_KEY_LEFT])
+		{
+			walkingX -= 0.01f;
+		}
+		if (keys[GLFW_KEY_DOWN])
+		{
+			walkingZ += 0.01f;
+		}
+		if (keys[GLFW_KEY_UP])
+		{
+			walkingZ -= 0.01f;
+		}
+		DrawModel(model, walkingX, walkingZ);
+
 
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
@@ -184,9 +210,14 @@ void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat
 	gridObject->RenderMesh();
 }
 
-void DrawModel(Model* model)
+void DrawModel(Model* model, float walkingX, float walkingZ)
 {
+	glDisable(GL_DEPTH_TEST);
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
+	modelShader->setMat4("modelMatrix", modelMatrix);
+
 	model->Draw(*modelShader);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void DrawAxis(glm::mat4 projectionMatrix)
