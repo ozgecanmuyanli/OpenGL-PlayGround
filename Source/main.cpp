@@ -18,8 +18,9 @@
 //VARIABLES
 Window mainWindow;
 Camera camera;
-Shader* myShader;
+Shader* modelShader;
 Shader* lineShader;
+Shader* gridShader;
 Model* model;
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
@@ -45,7 +46,7 @@ std::vector<GLuint> gridIndices;
 void MainLoop();
 float GetRandom(float min, float max);
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight);
-void DrawGrid(Mesh* gridObject, float scaleSize);
+void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix);
 void DrawModel(Model* model);
 void DrawAxis(glm::mat4 projectionMatrix);
 
@@ -62,11 +63,12 @@ void main()
 
 void MainLoop()
 {
-	myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
+	modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
+	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 
 	// LOAD MODEL
-	//model = new Model("C:/OpenGL-Playground/Models/bunny.obj");
+	model = new Model("../../Models/bunny.obj");
 
 	// GRIDS
 	GenerateGrids(GRID_SIZE_WIDTH, GRID_SIZE_HEIGHT);
@@ -74,8 +76,11 @@ void MainLoop()
 	gridObject->CreateMesh(&gridVertices[0], &gridIndices[0], gridVertices.size(), gridIndices.size());
 
 	// TEXTURES
-	Texture* texture = new Texture();
-	texture->LoadTexture("../../Textures/E022N42.bmp");
+	Texture* textureTerrain = new Texture();
+	textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
+
+	Texture* textureBunny = new Texture();
+	textureBunny->LoadTexture("../../Textures/wood.png");
 
 	// CAMERA
 	camera = Camera(glm::vec3(0.5f, 0.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
@@ -96,33 +101,39 @@ void MainLoop()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		modelMatrix = glm::mat4(1.0f);
 
+		textureTerrain->ActivateTexture(GL_TEXTURE0);
+		DrawGrid(gridObject, GRID_SCALE_SIZE, modelMatrix, projectionMatrix);
 		DrawAxis(projectionMatrix);
+
 		
 		// MAIN PROGRAM
-		myShader->use();
+		modelShader->use();
 
-		texture->ActivateTexture(GL_TEXTURE0);
-		myShader->setInt("texture1", 0);
+		textureBunny->ActivateTexture(GL_TEXTURE0);
+		modelShader->setInt("texture1", 0);
 
-		myShader->setMat4("projectionMatrix", projectionMatrix);
-		myShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-		myShader->setMat4("modelMatrix", modelMatrix);
-		myShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
+		// Change the model
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(1.1f, 0.0f, 1.1f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f, 0.2f, 0.2f));
 
-		DrawGrid(gridObject, GRID_SCALE_SIZE);
+		modelShader->setMat4("projectionMatrix", projectionMatrix);
+		modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+		modelShader->setMat4("modelMatrix", modelMatrix);
+		modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
 
-		//DrawModel(model);
+		DrawModel(model);
 
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
 		{
-			myShader = new Shader("../../Shaders/myShader.vs", "../../Shaders/myShader.fs");
+			modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 			lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
+			gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 		}
 
 		mainWindow.swapBuffers();
 	}
-	delete texture;
+	delete textureTerrain, textureBunny;
 }
 
 // FUNCTION IMPLEMENTATIONS
@@ -159,17 +170,23 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 	}
 }
 
-void DrawGrid(Mesh* gridObject, float scaleSize)
+void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix)
 {
+	gridShader->setInt("texture1", 0);
+	gridShader->use();
+	
 	// GRID SCALE
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
-	myShader->setMat4("modelMatrix", modelMatrix);
+	gridShader->setMat4("modelMatrix", modelMatrix);
+	gridShader->setMat4("projectionMatrix", projectionMatrix);
+	gridShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+
 	gridObject->RenderMesh();
 }
 
 void DrawModel(Model* model)
 {
-	model->Draw(*myShader);
+	model->Draw(*modelShader);
 }
 
 void DrawAxis(glm::mat4 projectionMatrix)
