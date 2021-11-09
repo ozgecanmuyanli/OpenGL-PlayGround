@@ -4,7 +4,8 @@ layout (location=0) in vec3 aPos;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 modelMatrix;
-uniform sampler2D textureTerrain;
+uniform sampler2D textureNoise;
+uniform float time;
 
 out vec2 oTextureCoord;
 out vec3 oPos;
@@ -14,10 +15,11 @@ void main()
 {
     oPos = aPos;
 	oTextureCoord = aPos.xz;
-	float greenChannelValue = texture(textureTerrain, oTextureCoord).g * 255.0 * 255.0; 
-    float vertexHeight = texture(textureTerrain, oTextureCoord).r * 255.0 + greenChannelValue;
-    finalHeight = (vertexHeight - 8000.0) / 21000.0; //real world height range
-	oPos.y = (finalHeight * 6);
+    oTextureCoord.x = oTextureCoord.x + (time * 0.2);
+    float vertexHeight = texture(textureNoise, oTextureCoord).r * 255.0;
+    finalHeight = (vertexHeight - 100.0) / 4000.0; //real world height range
+
+    oPos.y = (finalHeight * 6 + 10);
     
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(oPos, 1.0);
 }

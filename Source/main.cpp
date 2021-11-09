@@ -80,11 +80,14 @@ void MainLoop()
 	gridObject->CreateMesh(&gridVertices[0], &gridIndices[0], gridVertices.size(), gridIndices.size());
 
 	// TEXTURES
-	Texture* textureTerrain = new Texture();
-	textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
+	//Texture* textureTerrain = new Texture();
+	//textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
 
 	Texture* textureBunny = new Texture();
 	textureBunny->LoadTexture("../../Textures/wood.png");
+
+	Texture* textureNoise = new Texture();
+	textureNoise->LoadTexture("../../Textures/noise_cloud.png");
 
 	// CAMERA
 	camera = Camera(glm::vec3(0.5f, 6.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
@@ -106,7 +109,7 @@ void MainLoop()
 		modelMatrix = glm::mat4(1.0f);
 		modelMatrixWithoutScale = glm::mat4(1.0f);
 
-		textureTerrain->ActivateTexture(GL_TEXTURE0);
+		textureNoise->ActivateTexture(GL_TEXTURE0);
 		DrawGrid(gridObject, GRID_SCALE_SIZE, modelMatrix, projectionMatrix);
 		DrawAxis(projectionMatrix);
 
@@ -116,10 +119,6 @@ void MainLoop()
 
 		textureBunny->ActivateTexture(GL_TEXTURE0);
 		modelShader->setInt("textureModel", 0);
-
-		textureTerrain->ActivateTexture(GL_TEXTURE1);
-		modelShader->setInt("textureTerrain", 1);
-
 
 		modelShader->setMat4("projectionMatrix", projectionMatrix);
 		modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
@@ -169,7 +168,7 @@ void MainLoop()
 
 		mainWindow.swapBuffers();
 	}
-	delete textureTerrain, textureBunny;
+	delete textureBunny;
 }
 
 // FUNCTION IMPLEMENTATIONS
@@ -208,8 +207,9 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 
 void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix)
 {
-	gridShader->setInt("textureTerrain", 0);
+	gridShader->setInt("textureNoise", 0);
 	gridShader->use();
+	gridShader->setFloat("time", (float)glfwGetTime());
 	
 	modelMatrix = glm::mat4(1.0f);
 	// GRID SCALE
