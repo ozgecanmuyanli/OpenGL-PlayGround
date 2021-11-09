@@ -5,7 +5,7 @@ in vec2 oTextureCoord;
 in vec3 oPos;
 in float finalHeight;
 
-uniform sampler2D texture1;
+uniform sampler2D textureTerrain;
 uniform vec3 viewPos;
 
 void main()
@@ -24,5 +24,5 @@ void main()
 		finalColor = vec3(128.0 / 255.0, 255.0 / 255.0, 128.0 / 255.0);
 	}
 	
-	FragColor = vec4(vec3(finalColor * texture(texture1, oTextureCoord).bbb), 1.0f); 
+	FragColor = vec4(vec3(finalColor * texture(textureTerrain, oTextureCoord).bbb), 1.0f); 
 }

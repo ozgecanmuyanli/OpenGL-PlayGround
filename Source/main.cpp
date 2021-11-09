@@ -27,7 +27,11 @@ const int SCR_HEIGHT = 600;
 float fov = 45.0f;
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
+float walkingX = 0.0f;
+float walkingZ = 0.0f;
+float timeInSin = 0.0f;
 glm::mat4 modelMatrix;
+glm::mat4 modelMatrixWithoutScale;
 
 #define GRID_SIZE_WIDTH    (256)
 #define GRID_SIZE_HEIGHT   (256)
@@ -63,15 +67,12 @@ void main()
 
 void MainLoop()
 {
-	float walkingX = 0.0f;
-	float walkingZ = 0.0f;
-
 	modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 
 	// LOAD MODEL
-	model = new Model("../../Models/bunny.obj");
+	model = new Model("../../Models/cube.obj");
 
 	// GRIDS
 	GenerateGrids(GRID_SIZE_WIDTH, GRID_SIZE_HEIGHT);
@@ -86,7 +87,7 @@ void MainLoop()
 	textureBunny->LoadTexture("../../Textures/wood.png");
 
 	// CAMERA
-	camera = Camera(glm::vec3(0.5f, 0.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
+	camera = Camera(glm::vec3(0.5f, 6.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
 
 	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
@@ -103,6 +104,7 @@ void MainLoop()
 		bool* keys = mainWindow.getsKeys();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		modelMatrix = glm::mat4(1.0f);
+		modelMatrixWithoutScale = glm::mat4(1.0f);
 
 		textureTerrain->ActivateTexture(GL_TEXTURE0);
 		DrawGrid(gridObject, GRID_SCALE_SIZE, modelMatrix, projectionMatrix);
@@ -113,39 +115,47 @@ void MainLoop()
 		modelShader->use();
 
 		textureBunny->ActivateTexture(GL_TEXTURE0);
-		modelShader->setInt("texture1", 0);
+		modelShader->setInt("textureModel", 0);
 
-		// Change the model
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(1.1f, 0.0f, 1.1f));
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2f, 0.2f, 0.2f));
+		textureTerrain->ActivateTexture(GL_TEXTURE1);
+		modelShader->setInt("textureTerrain", 1);
+
 
 		modelShader->setMat4("projectionMatrix", projectionMatrix);
 		modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-		modelShader->setMat4("modelMatrix", modelMatrix);
 		modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
 
+		
+		timeInSin = sin(glfwGetTime() * 5.0f);
+		if (timeInSin <= 0)
+		{
+			timeInSin = 0;
+		}
 
 		// MODEL MOVEMENT
-		if (keys[GLFW_KEY_SPACE])
+		modelMatrix = glm::mat4(1.0f);
+
+		if (keys[GLFW_KEY_SPACE]) //jump
 		{
-			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 2.5f, 0.0f));
+			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, timeInSin, 0.0f));
 		}
 		if (keys[GLFW_KEY_RIGHT])
 		{
-			walkingX += 0.01f;
+			walkingX += 0.5 * deltaTime;
 		}
 		if (keys[GLFW_KEY_LEFT])
 		{
-			walkingX -= 0.01f;
+			walkingX -= 0.5 * deltaTime;
 		}
 		if (keys[GLFW_KEY_DOWN])
 		{
-			walkingZ += 0.01f;
+			walkingZ += 0.5 * deltaTime;
 		}
 		if (keys[GLFW_KEY_UP])
 		{
-			walkingZ -= 0.01f;
+			walkingZ -= 0.5 * deltaTime;
 		}
+
 		DrawModel(model, walkingX, walkingZ);
 
 
@@ -198,9 +208,10 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 
 void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix)
 {
-	gridShader->setInt("texture1", 0);
+	gridShader->setInt("textureTerrain", 0);
 	gridShader->use();
 	
+	modelMatrix = glm::mat4(1.0f);
 	// GRID SCALE
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
 	gridShader->setMat4("modelMatrix", modelMatrix);
@@ -212,12 +223,15 @@ void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat
 
 void DrawModel(Model* model, float walkingX, float walkingZ)
 {
-	glDisable(GL_DEPTH_TEST);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
-	modelShader->setMat4("modelMatrix", modelMatrix);
+	float modelScaleSize = 0.25f;
 
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
+
+	modelShader->setFloat("modelScaleSize", modelScaleSize);
+	modelShader->setFloat("gridScaleSize", GRID_SCALE_SIZE);
+	modelShader->setMat4("modelMatrix", modelMatrix);
 	model->Draw(*modelShader);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void DrawAxis(glm::mat4 projectionMatrix)

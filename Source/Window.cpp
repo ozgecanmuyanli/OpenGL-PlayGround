@@ -47,7 +47,7 @@ int Window::Initialise()
    glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
 
    glfwMakeContextCurrent(mainWindow);
-   //glfwSwapInterval(1);
+   glfwSwapInterval(1);
 
    createCallbacks();
    //glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
