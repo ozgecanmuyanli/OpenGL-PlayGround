@@ -4,7 +4,7 @@ layout (location=1) in vec2 aTextureCoord;
 layout (location=2) in vec3 aVertexNormal;
 
 out vec3 oPosInWorldSpace;
-out vec2 oTextureCoord;
+out vec2 oModelTextureCoord;
 out vec3 oVertexNormal;
 out vec3 oPos;
 
@@ -19,21 +19,21 @@ uniform float gridScaleSize;
 void main()
 {
 	oPos = aPos;
-	oTextureCoord = aTextureCoord;
 
 	vec3 modelCenterPoint = vec3(0.0f ,0.0f ,0.0f);
 	vec3 modelCenterPointInWorld = vec3(vec4(modelMatrix * vec4(modelCenterPoint, 1.0f)).xyz);
 	modelCenterPointInWorld = modelCenterPointInWorld / gridScaleSize;
 
 	// Terrain height calculation
-	// oTextureCoord = modelCenterPointInWorld.xz;
-	// float greenChannelValue = texture(textureTerrain, oTextureCoord).g * 255.0 * 255.0; 
-    // float vertexHeight = texture(textureTerrain, oTextureCoord).r * 255.0 + greenChannelValue;
-    // float finalHeight = (vertexHeight - 8000.0) / 21000.0; // real world height range
+	vec2 terrainTextureCoord = modelCenterPointInWorld.xz;
+	float greenChannelValue = texture(textureTerrain, terrainTextureCoord).g * 255.0 * 255.0; 
+    float vertexHeight = texture(textureTerrain, terrainTextureCoord).r * 255.0 + greenChannelValue;
+    float finalHeight = (vertexHeight - 8000.0) / 21000.0; // real world height range
 
+	oModelTextureCoord = aTextureCoord;
 	oVertexNormal = vec3(vec4(modelMatrix * vec4(aVertexNormal, 0.0f)).xyz); 
 	oPosInWorldSpace = vec3(vec4(modelMatrix * vec4(oPos, 1.0f)).xyz);
 
-	//oPosInWorldSpace.y = oPosInWorldSpace.y + (finalHeight * 6) + (0.1f * modelScaleSize); //0.1 is model size
+	oPosInWorldSpace.y = oPosInWorldSpace.y + (finalHeight * 6) + (0.1f * modelScaleSize); //0.1 is model size
 	gl_Position = projectionMatrix * viewMatrix * vec4(oPosInWorldSpace, 1.0f);	
 }

@@ -21,6 +21,7 @@ Camera camera;
 Shader* modelShader;
 Shader* lineShader;
 Shader* gridShader;
+Shader* cloudShader;
 Model* model;
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
@@ -31,7 +32,6 @@ float walkingX = 0.0f;
 float walkingZ = 0.0f;
 float timeInSin = 0.0f;
 glm::mat4 modelMatrix;
-glm::mat4 modelMatrixWithoutScale;
 
 #define GRID_SIZE_WIDTH    (256)
 #define GRID_SIZE_HEIGHT   (256)
@@ -50,8 +50,9 @@ std::vector<GLuint> gridIndices;
 void MainLoop();
 float GetRandom(float min, float max);
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight);
-void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix);
-void DrawModel(Model* model, float walkingX, float walkingZ);
+void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix);
+void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix);
+void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix);
 void DrawAxis(glm::mat4 projectionMatrix);
 
 void main()
@@ -70,27 +71,25 @@ void MainLoop()
 	modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
+	cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
 
 	// LOAD MODEL
 	model = new Model("../../Models/cube.obj");
 
-	// GRIDS
+	// OBJECTS
 	GenerateGrids(GRID_SIZE_WIDTH, GRID_SIZE_HEIGHT);
 	Mesh* gridObject = new Mesh();
 	gridObject->CreateMesh(&gridVertices[0], &gridIndices[0], gridVertices.size(), gridIndices.size());
 
+	Mesh* cloudObject = new Mesh();
+	cloudObject = gridObject;
+
 	// TEXTURES
-	//Texture* textureTerrain = new Texture();
-	//textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
-
-	Texture* textureBunny = new Texture();
-	textureBunny->LoadTexture("../../Textures/wood.png");
-
-	Texture* textureNoise = new Texture();
-	textureNoise->LoadTexture("../../Textures/noise_cloud.png");
+	Texture* textureTerrain = new Texture();
+	textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
 
 	// CAMERA
-	camera = Camera(glm::vec3(0.5f, 6.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
+	camera = Camera(glm::vec3(0.5f, 4.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
 
 	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
@@ -106,75 +105,147 @@ void MainLoop()
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		bool* keys = mainWindow.getsKeys();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrixWithoutScale = glm::mat4(1.0f);
+		
 
-		textureNoise->ActivateTexture(GL_TEXTURE0);
-		DrawGrid(gridObject, GRID_SCALE_SIZE, modelMatrix, projectionMatrix);
 		DrawAxis(projectionMatrix);
-
+		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix);
+		DrawCloud(cloudObject, GRID_SCALE_SIZE, projectionMatrix);
+		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix);
 		
-		// MAIN PROGRAM
-		modelShader->use();
-
-		textureBunny->ActivateTexture(GL_TEXTURE0);
-		modelShader->setInt("textureModel", 0);
-
-		modelShader->setMat4("projectionMatrix", projectionMatrix);
-		modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-		modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
-
-		
-		timeInSin = sin(glfwGetTime() * 5.0f);
-		if (timeInSin <= 0)
-		{
-			timeInSin = 0;
-		}
-
-		// MODEL MOVEMENT
-		modelMatrix = glm::mat4(1.0f);
-
-		if (keys[GLFW_KEY_SPACE]) //jump
-		{
-			modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, timeInSin, 0.0f));
-		}
-		if (keys[GLFW_KEY_RIGHT])
-		{
-			walkingX += 0.5 * deltaTime;
-		}
-		if (keys[GLFW_KEY_LEFT])
-		{
-			walkingX -= 0.5 * deltaTime;
-		}
-		if (keys[GLFW_KEY_DOWN])
-		{
-			walkingZ += 0.5 * deltaTime;
-		}
-		if (keys[GLFW_KEY_UP])
-		{
-			walkingZ -= 0.5 * deltaTime;
-		}
-
-		DrawModel(model, walkingX, walkingZ);
-
-
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
 		{
 			modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 			lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 			gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
+			cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
 		}
 
 		mainWindow.swapBuffers();
 	}
-	delete textureBunny;
+	//delete;
 }
 
 // FUNCTION IMPLEMENTATIONS
-float GetRandom(float min, float max)
+void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix)
 {
-	return ((float)rand() / ((float)RAND_MAX)) * (max - min) + min;
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	texture->ActivateTexture(GL_TEXTURE0);
+	gridShader->setInt(textureUniformName, 0);
+
+	gridShader->use();
+	gridShader->setFloat("time", (float)glfwGetTime());
+	
+	// GRID SCALE
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
+	gridShader->setMat4("modelMatrix", modelMatrix);
+	gridShader->setMat4("projectionMatrix", projectionMatrix);
+	gridShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+
+	gridObject->RenderMesh();
+}
+
+void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix)
+{
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+	static bool isNoiseTextureLoaded = false;
+	static Texture* textureNoise;
+	if (!isNoiseTextureLoaded)
+	{
+		textureNoise = new Texture();
+		textureNoise->LoadTexture("../../Textures/noise_cloud.png");
+		isNoiseTextureLoaded = true;
+	}
+	textureNoise->ActivateTexture(GL_TEXTURE0);
+	cloudShader->setInt("textureNoise", 0);
+
+	cloudShader->use();
+	cloudShader->setFloat("time", (float)glfwGetTime());
+
+	// GRID SCALE
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
+	cloudShader->setMat4("modelMatrix", modelMatrix);
+	cloudShader->setMat4("projectionMatrix", projectionMatrix);
+	cloudShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+
+	cloudObject->RenderMesh();
+}
+
+void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix)
+{
+	bool* keys = mainWindow.getsKeys();
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	float modelScaleSize = 0.25f;
+
+	static bool isModelTextureLoaded = false;
+	static Texture* textureModel;
+	if (!isModelTextureLoaded)
+	{
+		textureModel = new Texture();
+		textureModel->LoadTexture("../../Textures/wood.png");
+		isModelTextureLoaded = true;
+	}
+
+	modelShader->use();
+	
+	textureModel->ActivateTexture(GL_TEXTURE0);
+	modelShader->setInt("textureModel", 0);
+
+	texture->ActivateTexture(GL_TEXTURE1); //terrainTexture
+	modelShader->setInt(textureUniformName, 1);
+
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
+
+	modelShader->setMat4("projectionMatrix", projectionMatrix);
+	modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+	modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
+	modelShader->setFloat("modelScaleSize", modelScaleSize);
+	modelShader->setFloat("gridScaleSize", GRID_SCALE_SIZE);
+
+	float timeInSin = sin(glfwGetTime() * 5.0f);
+	if (timeInSin <= 0)
+	{
+		timeInSin = 0;
+	}
+	// MODEL MOVEMENT
+	if (keys[GLFW_KEY_SPACE]) //jump
+	{
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, timeInSin, 0.0f));
+	}
+	if (keys[GLFW_KEY_RIGHT])
+	{
+		walkingX += 0.5 * deltaTime;
+	}
+	if (keys[GLFW_KEY_LEFT])
+	{
+		walkingX -= 0.5 * deltaTime;
+	}
+	if (keys[GLFW_KEY_DOWN])
+	{
+		walkingZ += 0.5 * deltaTime;
+	}
+	if (keys[GLFW_KEY_UP])
+	{
+		walkingZ -= 0.5 * deltaTime;
+	}
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
+	modelShader->setMat4("modelMatrix", modelMatrix);
+	model->Draw(*modelShader);
+}
+
+void DrawAxis(glm::mat4 projectionMatrix)
+{
+	unsigned int lineVAO;
+	glGenVertexArrays(1, &lineVAO);
+
+	lineShader->use();
+	lineShader->setMat4("projectionMatrix", projectionMatrix);
+	lineShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+
+	glBindVertexArray(lineVAO);
+	glDrawArrays(GL_LINES, 0, 6);
+	glBindVertexArray(0);
 }
 
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
@@ -205,45 +276,7 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 	}
 }
 
-void DrawGrid(Mesh* gridObject, float scaleSize, glm::mat4 modelMatrix, glm::mat4 projectionMatrix)
+float GetRandom(float min, float max)
 {
-	gridShader->setInt("textureNoise", 0);
-	gridShader->use();
-	gridShader->setFloat("time", (float)glfwGetTime());
-	
-	modelMatrix = glm::mat4(1.0f);
-	// GRID SCALE
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
-	gridShader->setMat4("modelMatrix", modelMatrix);
-	gridShader->setMat4("projectionMatrix", projectionMatrix);
-	gridShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-
-	gridObject->RenderMesh();
-}
-
-void DrawModel(Model* model, float walkingX, float walkingZ)
-{
-	float modelScaleSize = 0.25f;
-
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
-
-	modelShader->setFloat("modelScaleSize", modelScaleSize);
-	modelShader->setFloat("gridScaleSize", GRID_SCALE_SIZE);
-	modelShader->setMat4("modelMatrix", modelMatrix);
-	model->Draw(*modelShader);
-}
-
-void DrawAxis(glm::mat4 projectionMatrix)
-{
-	unsigned int lineVAO;
-	glGenVertexArrays(1, &lineVAO);
-
-	lineShader->use();
-	lineShader->setMat4("projectionMatrix", projectionMatrix);
-	lineShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-
-	glBindVertexArray(lineVAO);
-	glDrawArrays(GL_LINES, 0, 6);
-	glBindVertexArray(0);
+	return ((float)rand() / ((float)RAND_MAX)) * (max - min) + min;
 }

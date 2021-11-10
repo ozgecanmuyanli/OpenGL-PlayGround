@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 oTextureCoord;
+in vec2 oModelTextureCoord;
 in vec3 oPosInWorldSpace; // object's position in world space
 in vec3 oVertexNormal;
 in vec3 oPos;
@@ -21,7 +21,7 @@ void main()
 	vec3 viewDir = normalize(viewPos - oPosInWorldSpace);
 	vec3 reflectDir = reflect(-lightDirection, vertexNormal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 specular = specularStrength * spec * texture(textureModel, oTextureCoord).rgb;
+	vec3 specular = specularStrength * spec * texture(textureModel, oModelTextureCoord).rgb;
 
-	FragColor = vec4((vec3(lightIntense) + specular), 1.0f) * texture(textureModel, oTextureCoord); 
+	FragColor = vec4((vec3(lightIntense) + specular), 1.0f) * texture(textureModel, oModelTextureCoord); 
 }
