@@ -22,6 +22,7 @@ Shader* modelShader;
 Shader* lineShader;
 Shader* gridShader;
 Shader* cloudShader;
+Shader* screenSpaceQuadShader;
 Model* model;
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
@@ -32,6 +33,7 @@ float walkingX = 0.0f;
 float walkingZ = 0.0f;
 float timeInSin = 0.0f;
 glm::mat4 modelMatrix;
+glm::mat4 miniProjectionMatrix;
 
 #define GRID_SIZE_WIDTH    (256)
 #define GRID_SIZE_HEIGHT   (256)
@@ -44,16 +46,16 @@ glm::mat4 modelMatrix;
 
 std::vector<float> gridVertices;
 std::vector<GLuint> gridIndices;
-
+unsigned int textureFBO;
 
 // FUNCTIONS
 void MainLoop();
-float GetRandom(float min, float max);
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight);
-void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix);
-void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix);
-void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix);
 void DrawAxis(glm::mat4 projectionMatrix);
+void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix);
+void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+void DrawScreenSpaceQuad();
 
 void main()
 {
@@ -72,6 +74,7 @@ void MainLoop()
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 	cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
+	screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 
 	// LOAD MODEL
 	model = new Model("../../Models/cube.obj");
@@ -95,6 +98,22 @@ void MainLoop()
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
 		(GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), NEAR, FAR);
 
+	// FRAMEBUFFER
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glGenTextures(1, &textureFBO);
+	glBindTexture(GL_TEXTURE_2D, textureFBO);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Attach texture
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+		textureFBO, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	while (!mainWindow.getShouldClose())
 	{
 		float currentFrame = glfwGetTime();
@@ -104,14 +123,29 @@ void MainLoop()
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		bool* keys = mainWindow.getsKeys();
+		
+		// FRAMEBUFFER
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
 
+		glm::mat4 miniViewMatrix = glm::lookAt(glm::vec3(walkingX, 5.0f, walkingZ), 
+														glm::vec3(walkingX, 0.0f, walkingZ), 
+														glm::vec3(0.0f, 0.0f, -1.0f));
+		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix, miniViewMatrix);
+		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, miniViewMatrix);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// END FRAMEBUFFER
+
+		DrawScreenSpaceQuad(); //draw textureFBO
 		DrawAxis(projectionMatrix);
-		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix);
+		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
 		DrawCloud(cloudObject, GRID_SCALE_SIZE, projectionMatrix);
-		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix);
-		
+		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
+
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
 		{
@@ -119,15 +153,16 @@ void MainLoop()
 			lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 			gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 			cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
+			screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 		}
-
 		mainWindow.swapBuffers();
 	}
+	glDeleteFramebuffers(1, &fbo);
 	//delete;
 }
 
 // FUNCTION IMPLEMENTATIONS
-void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix)
+void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	texture->ActivateTexture(GL_TEXTURE0);
@@ -140,7 +175,7 @@ void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::st
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(scaleSize, 1.0f, scaleSize));
 	gridShader->setMat4("modelMatrix", modelMatrix);
 	gridShader->setMat4("projectionMatrix", projectionMatrix);
-	gridShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+	gridShader->setMat4("viewMatrix", viewMatrix);
 
 	gridObject->RenderMesh();
 }
@@ -161,6 +196,7 @@ void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix)
 	cloudShader->setInt("textureNoise", 0);
 
 	cloudShader->use();
+
 	cloudShader->setFloat("time", (float)glfwGetTime());
 
 	// GRID SCALE
@@ -172,7 +208,7 @@ void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix)
 	cloudObject->RenderMesh();
 }
 
-void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix)
+void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
 	bool* keys = mainWindow.getsKeys();
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -189,16 +225,14 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 
 	modelShader->use();
 	
-	textureModel->ActivateTexture(GL_TEXTURE0);
+	textureModel->ActivateTexture(GL_TEXTURE0); // activate texture unit first
 	modelShader->setInt("textureModel", 0);
 
 	texture->ActivateTexture(GL_TEXTURE1); //terrainTexture
 	modelShader->setInt(textureUniformName, 1);
 
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
-
 	modelShader->setMat4("projectionMatrix", projectionMatrix);
-	modelShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+	modelShader->setMat4("viewMatrix", viewMatrix);
 	modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
 	modelShader->setFloat("modelScaleSize", modelScaleSize);
 	modelShader->setFloat("gridScaleSize", GRID_SCALE_SIZE);
@@ -215,29 +249,33 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 	}
 	if (keys[GLFW_KEY_RIGHT])
 	{
-		walkingX += 0.5 * deltaTime;
+		walkingX += 0.75 * deltaTime;
 	}
 	if (keys[GLFW_KEY_LEFT])
 	{
-		walkingX -= 0.5 * deltaTime;
+		walkingX -= 0.75 * deltaTime;
 	}
 	if (keys[GLFW_KEY_DOWN])
 	{
-		walkingZ += 0.5 * deltaTime;
+		walkingZ += 0.75 * deltaTime;
 	}
 	if (keys[GLFW_KEY_UP])
 	{
-		walkingZ -= 0.5 * deltaTime;
+		walkingZ -= 0.75 * deltaTime;
 	}
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
 	modelShader->setMat4("modelMatrix", modelMatrix);
 	model->Draw(*modelShader);
 }
 
 void DrawAxis(glm::mat4 projectionMatrix)
 {
-	unsigned int lineVAO;
-	glGenVertexArrays(1, &lineVAO);
+	static unsigned int lineVAO;
+	if (!lineVAO)
+	{
+		glGenVertexArrays(1, &lineVAO);
+	}
 
 	lineShader->use();
 	lineShader->setMat4("projectionMatrix", projectionMatrix);
@@ -245,6 +283,25 @@ void DrawAxis(glm::mat4 projectionMatrix)
 
 	glBindVertexArray(lineVAO);
 	glDrawArrays(GL_LINES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void DrawScreenSpaceQuad()
+{
+	static unsigned int quadVAO;
+	if (!quadVAO)
+	{
+		glGenVertexArrays(1, &quadVAO);
+	}
+
+	screenSpaceQuadShader->use();
+
+	glActiveTexture(GL_TEXTURE0); // activate texture unit first
+	glBindTexture(GL_TEXTURE_2D, textureFBO);
+	modelShader->setInt("quadTexture", 0);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 }
 
@@ -274,9 +331,4 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 			gridIndices.push_back(j + gridHeight + 1);
 		}
 	}
-}
-
-float GetRandom(float min, float max)
-{
-	return ((float)rand() / ((float)RAND_MAX)) * (max - min) + min;
 }

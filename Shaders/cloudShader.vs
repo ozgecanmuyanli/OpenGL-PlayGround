@@ -19,7 +19,7 @@ void main()
     float vertexHeight = texture(textureNoise, oTextureCoord).r * 255.0;
     finalHeight = (vertexHeight - 100.0) / 4000.0; //normalization
 
-    oPos.y = (finalHeight * 6 + 5);
+    oPos.y = (-finalHeight * 6 + 6);
     
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(oPos, 1.0);
 }
