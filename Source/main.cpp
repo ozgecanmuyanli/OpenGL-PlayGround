@@ -23,7 +23,9 @@ Shader* lineShader;
 Shader* gridShader;
 Shader* cloudShader;
 Shader* screenSpaceQuadShader;
+Shader* cubeShader;
 Model* model;
+Model* cubeRoom;
 const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 float fov = 45.0f;
@@ -34,6 +36,7 @@ float walkingZ = 0.0f;
 float timeInSin = 0.0f;
 glm::mat4 modelMatrix;
 glm::mat4 miniProjectionMatrix;
+glm::mat4 cubeModelMatrix;
 
 #define GRID_SIZE_WIDTH    (256)
 #define GRID_SIZE_HEIGHT   (256)
@@ -55,6 +58,7 @@ void DrawAxis(glm::mat4 projectionMatrix);
 void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix);
 void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 modelMatrix, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 void DrawScreenSpaceQuad();
 
 void main()
@@ -74,10 +78,13 @@ void MainLoop()
 	lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 	gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 	cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
-	screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
+	cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
+	//screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 
 	// LOAD MODEL
 	model = new Model("../../Models/cube.obj");
+
+	cubeRoom = new Model("../../Models/cube1x1.obj");
 
 	// OBJECTS
 	GenerateGrids(GRID_SIZE_WIDTH, GRID_SIZE_HEIGHT);
@@ -91,28 +98,17 @@ void MainLoop()
 	Texture* textureTerrain = new Texture();
 	textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
 
+	Texture* textureWood = new Texture();
+	textureWood->LoadTexture("../../Textures/wood.png");
+
+
 	// CAMERA
-	camera = Camera(glm::vec3(0.5f, 4.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
+	camera = Camera(glm::vec3(0.5f, 2.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
 
 	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
 		(GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), NEAR, FAR);
 
-	// FRAMEBUFFER
-	unsigned int fbo;
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	glGenTextures(1, &textureFBO);
-	glBindTexture(GL_TEXTURE_2D, textureFBO);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// Attach texture
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		textureFBO, 0);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	while (!mainWindow.getShouldClose())
 	{
@@ -123,28 +119,19 @@ void MainLoop()
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		bool* keys = mainWindow.getsKeys();
-		
-		// FRAMEBUFFER
-		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-		glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glm::mat4 miniViewMatrix = glm::lookAt(glm::vec3(walkingX, 5.0f, walkingZ), 
-														glm::vec3(walkingX, 0.0f, walkingZ), 
-														glm::vec3(0.0f, 0.0f, -1.0f));
-		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix, miniViewMatrix);
-		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, miniViewMatrix);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// END FRAMEBUFFER
 
-		DrawScreenSpaceQuad(); //draw textureFBO
+
 		DrawAxis(projectionMatrix);
-		DrawGrid(gridObject, GRID_SCALE_SIZE, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
-		DrawCloud(cloudObject, GRID_SCALE_SIZE, projectionMatrix);
+
+		cubeModelMatrix = glm::mat4(1.0f);
+		cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+		cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+		DrawCubeRoom(textureWood, "textureWood", cubeModelMatrix, projectionMatrix, camera.calculateViewMatrix());
+
 		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
+
 
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
@@ -153,15 +140,28 @@ void MainLoop()
 			lineShader = new Shader("../../Shaders/lineShader.vs", "../../Shaders/lineShader.fs");
 			gridShader = new Shader("../../Shaders/gridShader.vs", "../../Shaders/gridShader.fs");
 			cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
-			screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
+			cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
+			//screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 		}
 		mainWindow.swapBuffers();
 	}
-	glDeleteFramebuffers(1, &fbo);
-	//delete;
 }
 
 // FUNCTION IMPLEMENTATIONS
+void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 modelMatrix, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+{
+	texture->ActivateTexture(GL_TEXTURE0);
+	cubeShader->setInt(textureUniformName, 0);
+
+	cubeShader->use();
+	cubeShader->setMat4("modelMatrix", modelMatrix);
+	cubeShader->setMat4("projectionMatrix", projectionMatrix);
+	cubeShader->setMat4("viewMatrix", viewMatrix);
+	cubeShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
+	
+	cubeRoom->Draw(*cubeShader);
+}
+
 void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -192,8 +192,8 @@ void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix)
 		textureNoise->LoadTexture("../../Textures/noise_cloud.png");
 		isNoiseTextureLoaded = true;
 	}
-	textureNoise->ActivateTexture(GL_TEXTURE0);
-	cloudShader->setInt("textureNoise", 0);
+	textureNoise->ActivateTexture(GL_TEXTURE3);
+	cloudShader->setInt("textureNoise", 3);
 
 	cloudShader->use();
 
@@ -212,14 +212,14 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 {
 	bool* keys = mainWindow.getsKeys();
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	float modelScaleSize = 0.25f;
+	float modelScaleSize = 0.25;
 
 	static bool isModelTextureLoaded = false;
 	static Texture* textureModel;
 	if (!isModelTextureLoaded)
 	{
 		textureModel = new Texture();
-		textureModel->LoadTexture("../../Textures/wood.png");
+		textureModel->LoadTexture("../../Textures/awesomeface.png");
 		isModelTextureLoaded = true;
 	}
 
@@ -228,8 +228,8 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 	textureModel->ActivateTexture(GL_TEXTURE0); // activate texture unit first
 	modelShader->setInt("textureModel", 0);
 
-	texture->ActivateTexture(GL_TEXTURE1); //terrainTexture
-	modelShader->setInt(textureUniformName, 1);
+	//texture->ActivateTexture(GL_TEXTURE2); //terrainTexture
+	//modelShader->setInt(textureUniformName, 2);
 
 	modelShader->setMat4("projectionMatrix", projectionMatrix);
 	modelShader->setMat4("viewMatrix", viewMatrix);
@@ -264,7 +264,7 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 		walkingZ -= 0.75 * deltaTime;
 	}
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.0f, walkingZ));
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
 	modelShader->setMat4("modelMatrix", modelMatrix);
 	model->Draw(*modelShader);
 }
