@@ -103,7 +103,7 @@ void MainLoop()
 
 
 	// CAMERA
-	camera = Camera(glm::vec3(0.5f, 2.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
+	camera = Camera(glm::vec3(3.5f, 2.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
 
 	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
