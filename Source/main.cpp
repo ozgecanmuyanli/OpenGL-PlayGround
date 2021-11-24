@@ -16,6 +16,16 @@
 #include "Model.h"
 
 //VARIABLES
+#define GRID_SIZE_WIDTH    (256)
+#define GRID_SIZE_HEIGHT   (256)
+#define GRID_SCALE_SIZE    (7.0F)
+#define SCREEN_CLEAR_RED   (111.0F / 255.0F)
+#define SCREEN_CLEAR_GREEN (190.0F / 255.0F)
+#define SCREEN_CLEAR_BLUE  (255.0F / 255.0F)
+#define NEAR               (0.1F)
+#define FAR                (100.0F)
+#define OBJECTCOUNT        (600)
+
 Window mainWindow;
 Camera camera;
 Shader* modelShader;
@@ -25,6 +35,7 @@ Shader* cloudShader;
 Shader* screenSpaceQuadShader;
 Shader* cubeShader;
 Shader* grassShader;
+Shader* windowShader;
 Model* model;
 Model* cubeRoom;
 const int SCR_WIDTH = 800;
@@ -38,25 +49,12 @@ float timeInSin = 0.0f;
 glm::mat4 modelMatrix;
 glm::mat4 miniProjectionMatrix;
 glm::mat4 cubeModelMatrix;
-
-
-#define GRID_SIZE_WIDTH    (256)
-#define GRID_SIZE_HEIGHT   (256)
-#define GRID_SCALE_SIZE    (7.0F)
-#define SCREEN_CLEAR_RED   (111.0F / 255.0F)
-#define SCREEN_CLEAR_GREEN (190.0F / 255.0F)
-#define SCREEN_CLEAR_BLUE  (255.0F / 255.0F)
-#define NEAR               (0.1F)
-#define FAR                (100.0F)
-#define OBJECTCOUNT        (500)
-
+glm::mat4 randomModelMatrix[OBJECTCOUNT];
 std::vector<float> gridVertices;
 std::vector<GLuint> gridIndices;
 unsigned int textureFBO;
 
-glm::mat4 randomModelMatrix[OBJECTCOUNT];
-
-GLfloat squareVertices[] = {
+GLfloat squareVertices[] = { //for a grass texture
 	-0.5f, -0.5f, 0.2f, 0.0f, 0.0f,
 	0.5f, -0.5f, 0.2f, 1.0f, 0.0f,
 	0.5f, 0.5f, 0.2f, 1.0f, 1.0f,
@@ -66,8 +64,18 @@ GLuint squareIndices[] = {
 	0, 1, 2,
 	2, 3, 0
 };
-float randomScaleSize;
-glm::vec3 randomTranslatePos;
+
+GLfloat windowVertices[] = {
+	-0.5f, -0.5f, 0.2f, 0.0f, 0.0f,
+	0.5f, -0.5f, 0.2f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.2f, 1.0f, 1.0f,
+	-0.5f, 0.5f, 0.2f, 0.0f, 1.0f
+};
+GLuint windowIndices[] = {
+	0, 1, 2,
+	2, 3, 0
+};
+
 
 // FUNCTIONS
 void MainLoop();
@@ -81,21 +89,8 @@ void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::
 void DrawScreenSpaceQuad();
 void DrawSquare(GLfloat* vertices, GLuint* indices, unsigned int numOfVertices, unsigned int numOfIndices);
 void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix);
-
+void DrawGlassWindow(glm::mat4 projectionMatrix);
 void CreateRandomModelMatrix();
-
-void CreateRandomModelMatrix()
-{
-	float scaleRatio;
-	for (unsigned int i = 0; i < OBJECTCOUNT; i++)
-	{
-		randomModelMatrix[i] = glm::mat4(1.0f);
-		randomModelMatrix[i] = glm::translate(randomModelMatrix[i], glm::vec3(GetRandom(0.2f, 7.0f), 1.0f, GetRandom(0.2f, 7.0f)));
-		randomModelMatrix[i] = glm::rotate(randomModelMatrix[i], glm::radians(GetRandom(0.0f, 90.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
-		scaleRatio = GetRandom(1.0f, 2.0f);
-		randomModelMatrix[i] = glm::scale(randomModelMatrix[i], glm::vec3(scaleRatio, scaleRatio, scaleRatio));
-	}
-}
 
 
 void main()
@@ -105,8 +100,6 @@ void main()
 	mainWindow.Initialise();
 	glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //to see grids/vertices use GL_LINE instead of GL_FILL
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	CreateRandomModelMatrix();
 	MainLoop();
@@ -120,6 +113,7 @@ void MainLoop()
 	cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
 	cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
 	grassShader = new Shader("../../Shaders/grassShader.vs", "../../Shaders/grassShader.fs");
+	windowShader = new Shader("../../Shaders/WindowShader.vs", "../../Shaders/WindowShader.fs");
 	//screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 
 	// LOAD MODEL
@@ -135,10 +129,6 @@ void MainLoop()
 	Mesh* cloudObject = new Mesh();
 	cloudObject = gridObject;
 
-	//Mesh* squareObject = new Mesh();
-	//squareObject->CreateMesh(squareVertices, squareIndices,
-	//	sizeof(squareVertices) / sizeof(GLfloat), sizeof(squareIndices) / sizeof(GLfloat));
-
 	// TEXTURES
 	Texture* textureTerrain = new Texture();
 	textureTerrain->LoadTexture("../../Textures/E022N42.bmp");
@@ -146,11 +136,8 @@ void MainLoop()
 	Texture* textureWood = new Texture();
 	textureWood->LoadTexture("../../Textures/wood.png");
 
-	Texture* textureWindow = new Texture();
-	textureWindow->LoadTexture("../../Textures/window.png");
-
 	// CAMERA
-	camera = Camera(glm::vec3(3.5f, 2.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
+	camera = Camera(glm::vec3(5.5f, 4.5f, 20.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
 
 	// PROJECTION
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(fov),
@@ -181,9 +168,10 @@ void MainLoop()
 		cubeModelMatrix = glm::mat4(1.0f);
 		cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
 		cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
-		//textureWindow->ActivateTexture(GL_TEXTURE1);
-		//cubeShader->setInt("textureWindow", 1);
 		DrawCubeRoom(textureWood, "textureWood", cubeModelMatrix, projectionMatrix, camera.calculateViewMatrix());
+
+		DrawGlassWindow(projectionMatrix);
+
 
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
@@ -194,6 +182,7 @@ void MainLoop()
 			cloudShader = new Shader("../../Shaders/cloudShader.vs", "../../Shaders/cloudShader.fs");
 			cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
 			grassShader = new Shader("../../Shaders/grassShader.vs", "../../Shaders/grassShader.fs");
+			windowShader = new Shader("../../Shaders/WindowShader.vs", "../../Shaders/WindowShader.fs");
 			//screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 		}
 		mainWindow.swapBuffers();
@@ -358,6 +347,62 @@ void DrawScreenSpaceQuad()
 	glBindVertexArray(0);
 }
 
+void DrawGlassWindow(glm::mat4 projectionMatrix)
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	static bool isWindowTextureLoaded = false;
+	static Texture* textureWindow;
+	if (!isWindowTextureLoaded)
+	{
+		textureWindow = new Texture();
+		textureWindow->LoadTexture("../../Textures/window.png");
+		isWindowTextureLoaded = true;
+	}
+
+	windowShader->use();
+
+	textureWindow->ActivateTexture(GL_TEXTURE0); // activate texture unit first
+	windowShader->setInt("textureWindow", 0);
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(5.0f, 5.0f, 8.0f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));
+	windowShader->setMat4("modelMatrix", modelMatrix);
+	windowShader->setMat4("projectionMatrix", projectionMatrix);
+	windowShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+	DrawSquare(windowVertices, windowIndices, sizeof(windowVertices) / sizeof(GLfloat), sizeof(windowIndices) / sizeof(GLuint));
+	glDisable(GL_BLEND);
+}
+
+void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix)
+{
+	static bool isGrassTextureLoaded = false;
+	static Texture* textureGrass;
+	if (!isGrassTextureLoaded)
+	{
+		textureGrass = new Texture();
+		textureGrass->LoadTexture("../../Textures/grass.png");
+		isGrassTextureLoaded = true;
+	}
+
+	grassShader->use();
+
+	textureGrass->ActivateTexture(GL_TEXTURE0); // activate texture unit first
+	grassShader->setInt("textureGrass", 0);
+
+	grassShader->setFloat("time", (float)glfwGetTime());
+
+	grassShader->setMat4("modelMatrix", randomModelMatrix);
+	grassShader->setMat4("projectionMatrix", projectionMatrix);
+	grassShader->setMat4("viewMatrix", camera.calculateViewMatrix());
+	DrawSquare(squareVertices, squareIndices, sizeof(squareVertices) / sizeof(GLfloat), sizeof(squareIndices) / sizeof(GLuint));
+
+	randomModelMatrix = glm::rotate(randomModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	grassShader->setMat4("modelMatrix", randomModelMatrix);
+	DrawSquare(squareVertices, squareIndices, sizeof(squareVertices) / sizeof(GLfloat), sizeof(squareIndices) / sizeof(GLuint));
+}
+
 void DrawSquare(GLfloat* vertices, GLuint* indices, unsigned int numOfVertices, unsigned int numOfIndices)
 {
 	static unsigned int squareVAO;
@@ -392,34 +437,17 @@ void DrawSquare(GLfloat* vertices, GLuint* indices, unsigned int numOfVertices, 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix)
+void CreateRandomModelMatrix()
 {
-	//glm::mat4 modelMatrix = glm::mat4(1.0f);
-
-	static bool isGrassTextureLoaded = false;
-	static Texture* textureGrass;
-	if (!isGrassTextureLoaded)
+	float scaleRatio;
+	for (unsigned int i = 0; i < OBJECTCOUNT; i++)
 	{
-		textureGrass = new Texture();
-		textureGrass->LoadTexture("../../Textures/grass.png");
-		isGrassTextureLoaded = true;
+		randomModelMatrix[i] = glm::mat4(1.0f);
+		randomModelMatrix[i] = glm::translate(randomModelMatrix[i], glm::vec3(GetRandom(0.5f, 9.2f), 1.0f, GetRandom(0.5f, 9.2f)));
+		randomModelMatrix[i] = glm::rotate(randomModelMatrix[i], glm::radians(GetRandom(0.0f, 90.0f)), glm::vec3(0.0f, 1.0f, 0.0f));
+		scaleRatio = GetRandom(1.0f, 2.0f);
+		randomModelMatrix[i] = glm::scale(randomModelMatrix[i], glm::vec3(scaleRatio, scaleRatio, scaleRatio));
 	}
-
-	grassShader->use();
-
-	textureGrass->ActivateTexture(GL_TEXTURE0); // activate texture unit first
-	grassShader->setInt("textureGrass", 0);
-
-	grassShader->setFloat("time", (float)glfwGetTime());
-
-	grassShader->setMat4("modelMatrix", randomModelMatrix);
-	grassShader->setMat4("projectionMatrix", projectionMatrix);
-	grassShader->setMat4("viewMatrix", camera.calculateViewMatrix());
-	DrawSquare(squareVertices, squareIndices, sizeof(squareVertices) / sizeof(GLfloat), sizeof(squareIndices) / sizeof(GLuint));
-
-	randomModelMatrix = glm::rotate(randomModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	grassShader->setMat4("modelMatrix", randomModelMatrix);
-	DrawSquare(squareVertices, squareIndices, sizeof(squareVertices) / sizeof(GLfloat), sizeof(squareIndices) / sizeof(GLuint));
 }
 
 void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)

@@ -4,6 +4,7 @@ layout (location=1) in vec2 aTextureCoord;
 
 
 out vec2 oTextureCoord;
+out vec4 oPosInWorldSpace;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;

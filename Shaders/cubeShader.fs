@@ -46,12 +46,11 @@ vec3 AddLight()
 void main()
 {
     vec3 phongLight = AddLight();
-    // if (oVertexNormal.y < 0 )
-    // {
-    //     FragColor = vec4(texture(textureWood, oTextureCoord).rgb, 0.5f);
-    // }else
-    // {
-    //     FragColor = vec4(phongLight, 1.0);
-    // }
-    FragColor = vec4(phongLight, 1.0);
+    if (oVertexNormal.z < 0 )
+    {
+        discard;
+    }else
+    {
+        FragColor = vec4(phongLight, 1.0);
+    }
 }
