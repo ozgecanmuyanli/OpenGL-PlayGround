@@ -10,6 +10,7 @@ stb_image.cpp
 target_link_libraries(OpenGL-Playground
 PRIVATE
 GLAD
+IMGUI
 glfw
 )
 

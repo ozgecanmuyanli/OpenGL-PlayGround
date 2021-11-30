@@ -1,4 +1,5 @@
-# include "Window.h"
+#include "Window.h"
+
 
 Window::Window()
 {
@@ -66,6 +67,19 @@ int Window::Initialise()
    glViewport(0, 0, bufferWidth, bufferHeight);
 
    glfwSetWindowUserPointer(mainWindow, this);
+
+   // Setup Dear ImGui context
+   IMGUI_CHECKVERSION();
+   ImGui::CreateContext();
+   ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+   // Setup Dear ImGui style
+   ImGui::StyleColorsDark();
+   //ImGui::StyleColorsClassic();
+
+   // Setup Platform/Renderer backends
+   ImGui_ImplGlfw_InitForOpenGL(mainWindow, true);
+   ImGui_ImplOpenGL3_Init("#version 150");
 }
 
 void Window::createCallbacks()

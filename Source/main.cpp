@@ -53,6 +53,8 @@ glm::mat4 randomModelMatrix[OBJECTCOUNT];
 std::vector<float> gridVertices;
 std::vector<GLuint> gridIndices;
 unsigned int textureFBO;
+float grassWindSpeed;
+float floatDragValue = 1;
 
 GLfloat squareVertices[] = { //for a grass texture
 	-0.5f, -0.5f, 0.2f, 0.0f, 0.0f,
@@ -91,6 +93,7 @@ void DrawSquare(GLfloat* vertices, GLuint* indices, unsigned int numOfVertices, 
 void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix);
 void DrawGlassWindow(glm::mat4 projectionMatrix);
 void CreateRandomModelMatrix();
+void drawGUI();
 
 
 void main()
@@ -156,6 +159,7 @@ void MainLoop()
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		grassWindSpeed = (float)glfwGetTime() * floatDragValue;
 
 		DrawAxis(projectionMatrix);
 		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
@@ -185,6 +189,8 @@ void MainLoop()
 			windowShader = new Shader("../../Shaders/WindowShader.vs", "../../Shaders/WindowShader.fs");
 			//screenSpaceQuadShader = new Shader("../../Shaders/screenSpaceQuadShader.vs", "../../Shaders/screenSpaceQuadShader.fs");
 		}
+
+		drawGUI();
 		mainWindow.swapBuffers();
 	}
 }
@@ -391,7 +397,7 @@ void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix)
 	textureGrass->ActivateTexture(GL_TEXTURE0); // activate texture unit first
 	grassShader->setInt("textureGrass", 0);
 
-	grassShader->setFloat("time", (float)glfwGetTime());
+	grassShader->setFloat("time", grassWindSpeed);
 
 	grassShader->setMat4("modelMatrix", randomModelMatrix);
 	grassShader->setMat4("projectionMatrix", projectionMatrix);
@@ -481,4 +487,24 @@ void GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
 float GetRandom(float min, float max)
 {
 	return ((float)rand() / ((float)RAND_MAX)) * (max - min) + min;
+}
+
+void drawGUI()
+{
+	float x = 0;
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+	//draw guý
+
+	if (ImGui::Begin("Object Properties"))
+	{
+		ImGui::DragFloat("Position", &floatDragValue, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+		ImGui::ColorPicker3("ColorPicker", &floatDragValue);
+	}
+	ImGui::End();
+
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
