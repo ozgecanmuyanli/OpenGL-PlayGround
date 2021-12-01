@@ -54,7 +54,10 @@ std::vector<float> gridVertices;
 std::vector<GLuint> gridIndices;
 unsigned int textureFBO;
 float grassWindSpeed;
-float floatDragValue = 1;
+float floatDragValuePosition[] = {0.0f, 0.0f, 0.0f};
+float floatDragValueSpeed = 1;
+float floatDragValueScale = 1;
+float colorOfModel[] = { 0.3f, 0.0f, 0.3f };
 
 GLfloat squareVertices[] = { //for a grass texture
 	-0.5f, -0.5f, 0.2f, 0.0f, 0.0f,
@@ -87,7 +90,7 @@ void DrawAxis(glm::mat4 projectionMatrix);
 void DrawModel(Model* model, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 void DrawCloud(Mesh* cloudObject, float scaleSize, glm::mat4 projectionMatrix);
 void DrawGrid(Mesh* gridObject, float scaleSize, Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
-void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 modelMatrix, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 void DrawScreenSpaceQuad();
 void DrawSquare(GLfloat* vertices, GLuint* indices, unsigned int numOfVertices, unsigned int numOfIndices);
 void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix);
@@ -159,23 +162,16 @@ void MainLoop()
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		grassWindSpeed = (float)glfwGetTime() * floatDragValue;
-
 		DrawAxis(projectionMatrix);
 		DrawModel(model, textureTerrain, "textureTerrain", projectionMatrix, camera.calculateViewMatrix());
 
-		for (unsigned int i = 0; i <= OBJECTCOUNT; i++)
-		{
-			DrawGrass(projectionMatrix, randomModelMatrix[i]);
-		}
-		
-		cubeModelMatrix = glm::mat4(1.0f);
-		cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
-		cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
-		DrawCubeRoom(textureWood, "textureWood", cubeModelMatrix, projectionMatrix, camera.calculateViewMatrix());
+		//for (unsigned int i = 0; i <= OBJECTCOUNT; i++)
+		//{
+		//	DrawGrass(projectionMatrix, randomModelMatrix[i]);
+		//}
 
+		DrawCubeRoom(textureWood, "textureWood", projectionMatrix, camera.calculateViewMatrix());
 		DrawGlassWindow(projectionMatrix);
-
 
 		// TO EDIT SHADERS AT RUN TIME
 		if (keys[GLFW_KEY_F] && keys[GLFW_KEY_LEFT_CONTROL])
@@ -196,13 +192,17 @@ void MainLoop()
 }
 
 // FUNCTION IMPLEMENTATIONS
-void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 modelMatrix, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void DrawCubeRoom(Texture* texture, const std::string& textureUniformName, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
+	cubeModelMatrix = glm::mat4(1.0f);
+	cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+	cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(5.0f, 5.0f, 5.0f));
+
 	texture->ActivateTexture(GL_TEXTURE0);
 	cubeShader->setInt(textureUniformName, 0);
 
 	cubeShader->use();
-	cubeShader->setMat4("modelMatrix", modelMatrix);
+	cubeShader->setMat4("modelMatrix", cubeModelMatrix);
 	cubeShader->setMat4("projectionMatrix", projectionMatrix);
 	cubeShader->setMat4("viewMatrix", viewMatrix);
 	cubeShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
@@ -260,7 +260,6 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 {
 	bool* keys = mainWindow.getsKeys();
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	float modelScaleSize = 5.0f;
 
 	static bool isModelTextureLoaded = false;
 	static Texture* textureModel;
@@ -273,17 +272,14 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 
 	modelShader->use();
 	
-	textureModel->ActivateTexture(GL_TEXTURE0); // activate texture unit first
+	textureModel->ActivateTexture(GL_TEXTURE0);
 	modelShader->setInt("textureModel", 0);
-
-	//texture->ActivateTexture(GL_TEXTURE2); //terrainTexture
-	//modelShader->setInt(textureUniformName, 2);
 
 	modelShader->setMat4("projectionMatrix", projectionMatrix);
 	modelShader->setMat4("viewMatrix", viewMatrix);
 	modelShader->setVec3("viewPos", camera.getCameraPosition()); //send cam pos for specular light
-	modelShader->setFloat("modelScaleSize", modelScaleSize);
 	modelShader->setFloat("gridScaleSize", GRID_SCALE_SIZE);
+	modelShader->setVec3("objectColor", colorOfModel);
 
 	float timeInSin = sin(glfwGetTime() * 5.0f);
 	if (timeInSin <= 0)
@@ -311,8 +307,15 @@ void DrawModel(Model* model, Texture* texture, const std::string& textureUniform
 	{
 		walkingZ -= 0.75 * deltaTime;
 	}
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(walkingX, 0.4f, walkingZ));
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(modelScaleSize, modelScaleSize, modelScaleSize));
+	
+	modelMatrix = glm::translate(modelMatrix, 
+										  glm::vec3(floatDragValuePosition[0] + walkingX, 
+											  floatDragValuePosition[1], 
+											  floatDragValuePosition[2] + walkingZ));
+	modelMatrix = glm::scale(modelMatrix, 
+									glm::vec3(floatDragValueScale, 
+										floatDragValueScale, 
+										floatDragValueScale));
 	modelShader->setMat4("modelMatrix", modelMatrix);
 	model->Draw(*modelShader);
 }
@@ -344,7 +347,7 @@ void DrawScreenSpaceQuad()
 
 	screenSpaceQuadShader->use();
 
-	glActiveTexture(GL_TEXTURE0); // activate texture unit first
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureFBO);
 	modelShader->setInt("quadTexture", 0);
 
@@ -358,6 +361,7 @@ void DrawGlassWindow(glm::mat4 projectionMatrix)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
 	static bool isWindowTextureLoaded = false;
 	static Texture* textureWindow;
 	if (!isWindowTextureLoaded)
@@ -369,8 +373,9 @@ void DrawGlassWindow(glm::mat4 projectionMatrix)
 
 	windowShader->use();
 
-	textureWindow->ActivateTexture(GL_TEXTURE0); // activate texture unit first
+	textureWindow->ActivateTexture(GL_TEXTURE0);
 	windowShader->setInt("textureWindow", 0);
+
 
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(5.0f, 5.0f, 8.0f));
 	modelMatrix = glm::scale(modelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));
@@ -394,10 +399,10 @@ void DrawGrass(glm::mat4 projectionMatrix, glm::mat4 randomModelMatrix)
 
 	grassShader->use();
 
-	textureGrass->ActivateTexture(GL_TEXTURE0); // activate texture unit first
+	textureGrass->ActivateTexture(GL_TEXTURE0);
 	grassShader->setInt("textureGrass", 0);
 
-	grassShader->setFloat("time", grassWindSpeed);
+	grassShader->setFloat("time", ((float)glfwGetTime() * floatDragValueSpeed));
 
 	grassShader->setMat4("modelMatrix", randomModelMatrix);
 	grassShader->setMat4("projectionMatrix", projectionMatrix);
@@ -499,8 +504,10 @@ void drawGUI()
 
 	if (ImGui::Begin("Object Properties"))
 	{
-		ImGui::DragFloat("Position", &floatDragValue, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
-		ImGui::ColorPicker3("ColorPicker", &floatDragValue);
+		ImGui::DragFloat("Wind Speed", &floatDragValueSpeed, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+		ImGui::DragFloat("Scale", &floatDragValueScale, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+		ImGui::DragFloat3("Position", floatDragValuePosition, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+		ImGui::ColorPicker3("ColorPicker", colorOfModel);
 	}
 	ImGui::End();
 

@@ -5,6 +5,7 @@ in vec2 oModelTextureCoord;
 in vec3 oPosInWorldSpace; // object's position in world space
 in vec3 oVertexNormal;
 
+uniform vec3 objectColor;
 uniform sampler2D textureModel;
 uniform vec3 viewPos;
 
@@ -37,7 +38,6 @@ vec3 AddLight()
 	vec3 specular = spec * lightColor;
     specular *= attenuation;
 
-	vec3 objectColor = vec3(0.3f, 0.2f, 0.65f);
     vec3 phongLight = (ambient + diffuse + specular) * objectColor;
     return phongLight;
 }
