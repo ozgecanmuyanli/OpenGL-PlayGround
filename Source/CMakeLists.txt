@@ -5,6 +5,7 @@ Mesh.cpp
 Texture.cpp
 Camera.cpp
 stb_image.cpp
+Button.cpp
 )
 
 target_link_libraries(OpenGL-Playground

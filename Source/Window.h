@@ -1,3 +1,4 @@
+#pragma once
 #include "stdio.h"
 #include<iostream>
 #include <glad/glad.h>
@@ -22,6 +23,10 @@ public:
    bool* getsKeys() { return keys; }
    GLfloat getXChange();
    GLfloat getYChange();
+   double getCursorPosX();
+   double getCursorPosY();
+   bool getButtonClickInfo() { return isButtonClicked; }
+   GLFWwindow* getWindow() { return mainWindow; }
 
    void swapBuffers() { glfwSwapBuffers(mainWindow); }
 
@@ -36,9 +41,12 @@ private:
    bool keys[1024];
 
    GLfloat lastX, lastY, xChange, yChange;
+   double xPosition, yPosition;
+   bool isButtonClicked = false;
    bool mouseFirstMoved;
 
    void createCallbacks();
    static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
-   static void handleMouse(GLFWwindow* window, double xPos, double yPos);
+   static void handleMouseMove(GLFWwindow* window, double xPos, double yPos);
+   static void handleMouseButton(GLFWwindow* window,int, int, int);
 };

@@ -3,8 +3,8 @@
 
 Window::Window()
 {
-   width = 800;
-   height = 600;
+   width = 1600;
+   height = 900;
 
    for (size_t i = 0; i < 1024; i++)
    {
@@ -38,7 +38,7 @@ int Window::Initialise()
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-   mainWindow = glfwCreateWindow(width, height, "My window", NULL, NULL);
+   mainWindow = glfwCreateWindow(width, height, "Name of the game", NULL, NULL);
    if (!mainWindow)
    {
       glfwTerminate();
@@ -85,7 +85,8 @@ int Window::Initialise()
 void Window::createCallbacks()
 {
    glfwSetKeyCallback(mainWindow, handleKeys);
-   glfwSetCursorPosCallback(mainWindow, handleMouse);
+   glfwSetCursorPosCallback(mainWindow, handleMouseMove);
+   glfwSetMouseButtonCallback(mainWindow, handleMouseButton);
 }
 
 GLfloat Window::getXChange()
@@ -101,6 +102,16 @@ GLfloat Window::getYChange()
    yChange = 0.0f;
    return thChange;
 }
+
+double Window::getCursorPosX()
+{
+   return (xPosition- 800);
+}
+double Window::getCursorPosY()
+{
+   return (450 - yPosition);
+}
+
 
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
@@ -121,12 +132,12 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
       }
    }
 }
-void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
+
+void Window::handleMouseMove(GLFWwindow* window, double xPos, double yPos)
 {
    Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
    {
-      
       if (theWindow->mouseFirstMoved)
       {
          theWindow->lastX = xPos;
@@ -137,13 +148,32 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
       theWindow->yChange = theWindow->lastY - yPos;
       theWindow->lastX = xPos;
       theWindow->lastY = yPos;
-      
    }
+
+   glfwGetCursorPos(window, &xPos, &yPos);
+   theWindow->xPosition = xPos;
+   theWindow->yPosition = yPos;
+
+}
+
+void Window::handleMouseButton(GLFWwindow* window, int, int, int)
+{
+   Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
+
    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
    {
       theWindow->mouseFirstMoved = true;
    }
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+   {
+      theWindow->isButtonClicked = true;
+   }
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+   {
+      theWindow->isButtonClicked = false;
+   }
 }
+
 Window::~Window() 
 {
    glfwTerminate();
