@@ -6,6 +6,11 @@ Texture.cpp
 Camera.cpp
 stb_image.cpp
 Button.cpp
+State.cpp
+MainWindowState.cpp
+CreditsWindowState.cpp
+GamePlayWindowState.cpp
+PauseWindowState.cpp
 )
 
 target_link_libraries(OpenGL-Playground

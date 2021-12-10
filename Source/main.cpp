@@ -15,6 +15,12 @@
 #include "Camera.h"
 #include "Model.h"
 #include "Button.h"
+#include "State.h"
+#include "MainWindowState.h"
+#include "CreditsWindowState.h"
+#include "GamePlayWindowState.h"
+#include "PauseWindowState.h"
+#include "enum.h"
 
 //VARIABLES
 #define SCREEN_CLEAR_RED   (82.0F / 255.0F)
@@ -39,6 +45,12 @@ Texture* playButtonClickedTexture;
 Texture* creditsButtonClickedTexture;
 Texture* quitButtonClickedTexture;
 Texture* gameButtonClickedTexture;
+
+State* currentState;
+MainWindowState* mainWindowState;
+CreditsWindowState* creditsWindowState;
+GamePlayWindowState* gamePlayWindowState;
+PauseWindowState* pauseWindowState;
 
 
 // FUNCTIONS
@@ -86,6 +98,13 @@ void Init()
 	buttonQuit->SetButtonTextures(quitButtonDefaultTexture);
 	//quitButtonClickedTexture = new Texture();
 	//quitButtonClickedTexture->LoadTexture("../../Textures/quitButtonClicked.png");	
+
+	mainWindowState = new MainWindowState();
+	creditsWindowState = new CreditsWindowState();
+	gamePlayWindowState = new GamePlayWindowState();
+	pauseWindowState = new PauseWindowState();
+
+	currentState = mainWindowState;
 }
 
 void MainLoop()
@@ -101,6 +120,23 @@ void MainLoop()
 		bool* keys = mainWindow.getsKeys();
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		if (MAIN_WINDOW == currentState->UpdateState())
+		{
+			std::cout << "mainwindow render operations here" << std::endl;
+		}
+		else if (CREDITS_WINDOW == currentState->UpdateState())
+		{
+			std::cout << "creditswindow render operations here" << std::endl;
+		}
+		else if (GAME_PLAY_WINDOW == currentState->UpdateState())
+		{
+			std::cout << "gameplaywindow render operations here" << std::endl;
+		}
+		else if (PAUSE_WINDOW == currentState->UpdateState())
+		{
+			std::cout << "pausewindow render operations here" << std::endl;
+		}
 
 
 		if (buttonGameName->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
