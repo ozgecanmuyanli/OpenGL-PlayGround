@@ -15,7 +15,8 @@ public:
 
    virtual StateType UpdateState();
    virtual void RenderState();
+   StateType stateType;
 
 private:
-
+   
 };

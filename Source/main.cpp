@@ -121,22 +121,33 @@ void MainLoop()
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (MAIN_WINDOW == currentState->UpdateState())
+		StateType ret = currentState->UpdateState();
+		
+
+		if (ret != currentState->stateType)
 		{
-			std::cout << "mainwindow render operations here" << std::endl;
+			if (MAIN_WINDOW == ret)
+			{
+				currentState = mainWindowState;
+				std::cout << "mainwindow render operations here" << std::endl;
+			}
+			else if (CREDITS_WINDOW == ret)
+			{
+				currentState = creditsWindowState;
+				std::cout << "creditswindow render operations here" << std::endl;
+			}
+			else if (GAME_PLAY_WINDOW == ret)
+			{
+				currentState = gamePlayWindowState;
+				std::cout << "gameplaywindow render operations here" << std::endl;
+			}
+			else if (PAUSE_WINDOW == ret)
+			{
+				currentState = pauseWindowState;
+				std::cout << "pausewindow render operations here" << std::endl;
+			}
 		}
-		else if (CREDITS_WINDOW == currentState->UpdateState())
-		{
-			std::cout << "creditswindow render operations here" << std::endl;
-		}
-		else if (GAME_PLAY_WINDOW == currentState->UpdateState())
-		{
-			std::cout << "gameplaywindow render operations here" << std::endl;
-		}
-		else if (PAUSE_WINDOW == currentState->UpdateState())
-		{
-			std::cout << "pausewindow render operations here" << std::endl;
-		}
+
 
 
 		if (buttonGameName->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())

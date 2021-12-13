@@ -3,6 +3,7 @@
 MainWindowState::MainWindowState()
 {
    std::cout << " MainWindowState constructor" << std::endl;
+   stateType = MAIN_WINDOW;
 }
 
 void MainWindowState::Initialise()
@@ -12,12 +13,12 @@ void MainWindowState::Initialise()
 
 StateType MainWindowState::UpdateState()
 {
-   returnValue = MAIN_WINDOW;
    std::cout << " MainWindowState class UpdateState function" << std::endl;
 
    //if credits button is clicked
-   //returnValue = CREDITS_WINDOW
-   return returnValue;
+   //return CREDITS_WINDOW
+
+   return stateType;
 }
 
 void MainWindowState::RenderState()

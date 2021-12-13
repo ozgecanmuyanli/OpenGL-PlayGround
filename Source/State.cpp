@@ -8,7 +8,7 @@ State::State()
 StateType State::UpdateState()
 {
    std::cout << " Base class UpdateState function" << std::endl;
-   return MAIN_WINDOW;
+   return stateType;
 }
 
 void State::RenderState()
