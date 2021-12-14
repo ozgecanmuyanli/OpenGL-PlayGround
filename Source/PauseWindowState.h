@@ -22,5 +22,9 @@ public:
 
 
 private:
-   StateType returnValue;
+   Button* resumeButton;
+   Button* backToMainManuButton;
+   Texture* mainPauseWindowButtonTexture;
+   Texture* resumeButtonTexture;
+   Texture* backToMainManuButtonTexture;
 };

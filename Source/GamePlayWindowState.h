@@ -22,5 +22,5 @@ public:
 
 
 private:
-   StateType returnValue;
+   bool* keys;
 };

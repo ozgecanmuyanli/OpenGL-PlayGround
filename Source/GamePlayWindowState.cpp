@@ -12,6 +12,11 @@ void GamePlayWindowState::Initialise()
 
 StateType GamePlayWindowState::UpdateState(Window mainWindow)
 {
+   keys = mainWindow.getsKeys();
+   if (keys[GLFW_KEY_ESCAPE])
+   {
+      return PAUSE_WINDOW;
+   }
 
    return stateType;
 }

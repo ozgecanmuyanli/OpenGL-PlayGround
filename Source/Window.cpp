@@ -116,10 +116,10 @@ double Window::getCursorPosY()
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
    Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
-   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-   {
-      glfwSetWindowShouldClose(window, GL_TRUE);
-   }
+   //if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+   //{
+   //   glfwSetWindowShouldClose(window, GL_TRUE);
+   //}
    if (key >= 0 && key < 1024)
    {
       if (action == GLFW_PRESS)
@@ -168,7 +168,7 @@ void Window::handleMouseButton(GLFWwindow* window, int, int, int)
    {
       theWindow->isButtonClicked = true;
    }
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+   else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
    {
       theWindow->isButtonClicked = false;
    }

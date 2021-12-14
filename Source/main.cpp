@@ -34,8 +34,6 @@ float lastFrame = 0.0f; // Time of last frame
 Window mainWindow;
 Camera camera;
 
-
-
 State* currentState;
 StateType returnedState;
 MainWindowState* mainWindowState;
