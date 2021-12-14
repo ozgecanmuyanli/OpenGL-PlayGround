@@ -2,7 +2,7 @@
 
 GamePlayWindowState::GamePlayWindowState()
 {
-   std::cout << " GamePlayWindowState constructor" << std::endl;
+   stateType = GAME_PLAY_WINDOW;
 }
 
 void GamePlayWindowState::Initialise()
@@ -10,15 +10,12 @@ void GamePlayWindowState::Initialise()
 
 }
 
-StateType GamePlayWindowState::UpdateState()
+StateType GamePlayWindowState::UpdateState(Window mainWindow)
 {
-   returnValue = GAME_PLAY_WINDOW;
-   std::cout << " GamePlayWindowState class UpdateState function" << std::endl;
 
-   return returnValue;
+   return stateType;
 }
 
 void GamePlayWindowState::RenderState()
 {
-   std::cout << " GamePlayWindowState class UpdateState function" << std::endl;
 }

@@ -2,7 +2,7 @@
 
 PauseWindowState::PauseWindowState()
 {
-   std::cout << " PauseWindowState constructor" << std::endl;
+   stateType = PAUSE_WINDOW;
 }
 
 void PauseWindowState::Initialise()
@@ -10,15 +10,12 @@ void PauseWindowState::Initialise()
 
 }
 
-StateType PauseWindowState::UpdateState()
+StateType PauseWindowState::UpdateState(Window mainWindow)
 {
-   returnValue = PAUSE_WINDOW;
-   std::cout << " PauseWindowState class UpdateState function" << std::endl;
 
-   return returnValue;
+   return stateType;
 }
 
 void PauseWindowState::RenderState()
 {
-   std::cout << " PauseWindowState class UpdateState function" << std::endl;
 }

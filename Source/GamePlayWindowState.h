@@ -17,7 +17,7 @@ public:
    GamePlayWindowState();
 
    void Initialise();
-   StateType UpdateState();
+   StateType UpdateState(Window mainWindow);
    void RenderState();
 
 

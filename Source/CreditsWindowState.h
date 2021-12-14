@@ -17,10 +17,15 @@ public:
    CreditsWindowState();
 
    void Initialise();
-   StateType UpdateState();
+   StateType UpdateState(Window mainWindow);
    void RenderState();
 
 
 private:
-   StateType returnValue;
+   Button* backButton;
+   Button* creditsHeaderButton;
+   Button* creditsWindowButton;
+   Texture* backButtonTexture;
+   Texture* creditsHeaderButtonTexture;
+   Texture* creditsWindowButtonTexture;
 };

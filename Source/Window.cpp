@@ -176,5 +176,5 @@ void Window::handleMouseButton(GLFWwindow* window, int, int, int)
 
 Window::~Window() 
 {
-   glfwTerminate();
+   //glfwTerminate();
 }

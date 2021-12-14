@@ -2,25 +2,41 @@
 
 CreditsWindowState::CreditsWindowState()
 {
-   std::cout << " CreditsWindowState constructor" << std::endl;
+   stateType = CREDITS_WINDOW;
 }
 
 void CreditsWindowState::Initialise()
 {
+   backButton = new Button(glm::vec3(200.0f, -400.0f, 0.0f), glm::vec3(179.0f / 255.0f, 57.0f / 255.0f, 81.0f / 255.0f));
+   creditsHeaderButton = new Button(glm::vec3(0.0f, 400.0f, 0.0f), glm::vec3(254.0f / 255.0f, 158.0f / 255.0f, 132.0f / 255.0f));
+   creditsWindowButton = new Button(glm::vec3(0.0f), glm::vec3(247.0f / 255.0f, 231.0f / 255.0f, 190.0f / 255.0f), glm::vec3(2.0f, 12.0f, 1.0f));
 
+   backButtonTexture = new Texture();
+   backButtonTexture->LoadTexture("../../Textures/backButton.png");
+   backButton->SetButtonTextures(backButtonTexture);
+
+   creditsHeaderButtonTexture = new Texture();
+   creditsHeaderButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+   creditsHeaderButton->SetButtonTextures(creditsHeaderButtonTexture);
+
+   creditsWindowButtonTexture = new Texture();
+   creditsWindowButtonTexture->LoadTexture("../../Textures/creditsWindow.png");
+   creditsWindowButton->SetButtonTextures(creditsWindowButtonTexture);
 }
 
-StateType CreditsWindowState::UpdateState()
+StateType CreditsWindowState::UpdateState(Window mainWindow)
 {
-   returnValue = CREDITS_WINDOW;
-   std::cout << " CreditsWindowState class UpdateState function" << std::endl;
+   if (backButton->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+   {
+      return MAIN_WINDOW;
+   }
 
-   // if backButton clicked returnValue=MAINWINDOW
-
-   return returnValue;
+   return stateType;
 }
 
 void CreditsWindowState::RenderState()
 {
-   std::cout << " CreditsWindowState class UpdateState function" << std::endl;
+   backButton->DrawButton();
+   creditsHeaderButton->DrawButton();
+   creditsWindowButton->DrawButton();
 }
