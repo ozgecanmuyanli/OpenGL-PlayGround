@@ -149,6 +149,10 @@ void Window::handleMouseMove(GLFWwindow* window, double xPos, double yPos)
       theWindow->lastX = xPos;
       theWindow->lastY = yPos;
    }
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+   {
+      theWindow->mouseFirstMoved = true;
+   }
 
    glfwGetCursorPos(window, &xPos, &yPos);
    theWindow->xPosition = xPos;
@@ -156,22 +160,10 @@ void Window::handleMouseMove(GLFWwindow* window, double xPos, double yPos)
 
 }
 
+
 void Window::handleMouseButton(GLFWwindow* window, int, int, int)
 {
    Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
-
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
-   {
-      theWindow->mouseFirstMoved = true;
-   }
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-   {
-      theWindow->isButtonClicked = true;
-   }
-   else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-   {
-      theWindow->isButtonClicked = false;
-   }
 }
 
 Window::~Window() 

@@ -26,7 +26,10 @@ void CreditsWindowState::Initialise()
 
 StateType CreditsWindowState::UpdateState(Window mainWindow)
 {
-   if (backButton->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+   backButton->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+   backButton->HandleMouseInput(mainWindow.getWindow());
+
+   if (backButton->IsButtonClicked())
    {
       return MAIN_WINDOW;
    }

@@ -21,11 +21,17 @@ void PauseWindowState::Initialise()
 
 StateType PauseWindowState::UpdateState(Window mainWindow)
 {
-   if (backToMainManuButton->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+   backToMainManuButton->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+   backToMainManuButton->HandleMouseInput(mainWindow.getWindow());
+
+   resumeButton->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+   resumeButton->HandleMouseInput(mainWindow.getWindow());
+
+   if (backToMainManuButton->IsButtonClicked())
    {
       return MAIN_WINDOW;
    }
-   if (resumeButton->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+   if (resumeButton->IsButtonClicked())
    {
       return GAME_PLAY_WINDOW;
    }

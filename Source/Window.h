@@ -6,6 +6,7 @@
 #include <imgui-master/imgui.h>
 #include <imgui-master/imgui_impl_glfw.h>
 #include <imgui-master/imgui_impl_opengl3.h>
+#include "Button.h"
 
 
 class Window
@@ -25,7 +26,6 @@ public:
    GLfloat getYChange();
    double getCursorPosX();
    double getCursorPosY();
-   bool getButtonClickInfo() { return isButtonClicked; }
    GLFWwindow* getWindow() { return mainWindow; }
 
    void swapBuffers() { glfwSwapBuffers(mainWindow); }
@@ -42,9 +42,8 @@ private:
 
    GLfloat lastX, lastY, xChange, yChange;
    double xPosition, yPosition;
-   bool isButtonClicked = false;
    bool mouseFirstMoved;
-
+   
    void createCallbacks();
    static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
    static void handleMouseMove(GLFWwindow* window, double xPos, double yPos);

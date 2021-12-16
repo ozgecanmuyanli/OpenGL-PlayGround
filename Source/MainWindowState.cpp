@@ -39,15 +39,25 @@ void MainWindowState::Initialise()
 
 StateType MainWindowState::UpdateState(Window mainWindow)
 {
-	if (buttonPlay->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+
+	buttonPlay->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+	buttonPlay->HandleMouseInput(mainWindow.getWindow());
+	
+	buttonCredits->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+	buttonCredits->HandleMouseInput(mainWindow.getWindow());
+
+	buttonQuit->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
+	buttonQuit->HandleMouseInput(mainWindow.getWindow());
+
+	if (buttonPlay->IsButtonClicked())
 	{
 		return GAME_PLAY_WINDOW;
 	}
-	if (buttonCredits->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+	if (buttonCredits->IsButtonClicked())
 	{
 		return CREDITS_WINDOW;
 	}
-	if (buttonQuit->ClickButton((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY()) && mainWindow.getButtonClickInfo())
+	if (buttonQuit->IsButtonClicked())
 	{
 		glfwSetWindowShouldClose(mainWindow.getWindow(), GL_TRUE);
 	}

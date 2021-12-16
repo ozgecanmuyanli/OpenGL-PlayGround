@@ -84,12 +84,63 @@ void Button::CreateBoundingBox()
 	boundingBoxRightTop = model * glm::vec4(buttonVertices[10], buttonVertices[11], 1.0f, 1.0f);
 }
 
-bool Button::ClickButton(GLfloat xCursorPos, GLfloat yCursorPos)
+void Button::CheckIsMouseInside(GLfloat xCursorPos, GLfloat yCursorPos)
 {
 	if (xCursorPos < boundingBoxRightTop.x && xCursorPos > boundingBoxLeftBottom.x &&
 		yCursorPos < boundingBoxRightTop.y && yCursorPos > boundingBoxLeftBottom.y)
 	{
-		return true;
+		inside = true;
+		outside = false;
+		//return true;
 	}
-	else { return false; }
+	else {
+		outside = true;
+		inside = false;
+	}
+	//return false; 
+	
+}
+
+void Button::HandleMouseInput(GLFWwindow* mainWindow)
+{
+	static int oldState = GLFW_RELEASE;
+	int newState = glfwGetMouseButton(mainWindow, GLFW_MOUSE_BUTTON_LEFT);
+	isButtonClicked = false;
+
+	if (inside)
+	{
+		if (newState == GLFW_RELEASE && oldState == GLFW_PRESS)
+		{
+			if (!outPressed)
+			{
+				isButtonClicked = true;
+			}
+		}
+		else
+		{
+			isButtonClicked = false;
+		}
+		oldState = newState;
+		outPressed = false;
+	}
+	if (outside)
+	{
+		isButtonClicked = false;
+		outPressed = false;
+
+		if (newState == GLFW_RELEASE && oldState == GLFW_PRESS)
+		{
+			outPressed = true;
+		}
+		if (newState == GLFW_PRESS && oldState == GLFW_RELEASE)
+		{
+			outPressed = true;
+		}
+		if (newState == GLFW_PRESS && oldState == GLFW_PRESS)
+		{
+			outPressed = true;
+		}
+	}
+
+	
 }

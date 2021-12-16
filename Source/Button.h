@@ -9,6 +9,7 @@
 #include "stb_image.h"
 #include "shader.h"
 #include "Texture.h"
+#include "Window.h"
 
 class Button
 {
@@ -17,9 +18,12 @@ public:
 
    void InitialiseButton();
    void DrawButton();
-   bool ClickButton(GLfloat xCursorPos, GLfloat yCursorPos);
+   void CheckIsMouseInside(GLfloat xCursorPos, GLfloat yCursorPos);
    void CreateBoundingBox();
    void SetButtonTextures(Texture* buttonTtexture);
+
+   void HandleMouseInput(GLFWwindow* mainWindow);
+   bool IsButtonClicked() { return isButtonClicked; }
 
 private:
    Shader* buttonShader;
@@ -29,6 +33,10 @@ private:
    unsigned int buttonVAO, buttonIBO, buttonVBO;
    glm::vec3 buttonPosition, buttonScale, buttonColor;
    glm::mat4 projection, model;
-   bool isButtonClicked;
    glm::vec4 boundingBoxLeftBottom, boundingBoxRightTop;
+
+   bool isButtonClicked = false;
+   bool outPressed = false;
+   //bool inPressed = false;
+   bool inside, outside;
 };
