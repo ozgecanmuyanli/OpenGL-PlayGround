@@ -24,7 +24,7 @@ public:
 private:
    Button* resumeButton;
    Button* backToMainManuButton;
-   Texture* mainPauseWindowButtonTexture;
    Texture* resumeButtonTexture;
    Texture* backToMainManuButtonTexture;
+   Texture* clickEffectTexture;
 };

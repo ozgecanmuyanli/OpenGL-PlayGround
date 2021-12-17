@@ -28,12 +28,9 @@ private:
    Button* buttonCredits;
    Button* buttonQuit;
 
-   Texture* playButtonDefaultTexture;
-   Texture* creditsButtonDefaultTexture;
-   Texture* quitButtonDefaultTexture;
-   Texture* gameButtonDefaultTexture;
-   Texture* playButtonClickedTexture;
-   Texture* creditsButtonClickedTexture;
-   Texture* quitButtonClickedTexture;
-   Texture* gameButtonClickedTexture;
+   Texture* clickEffectTexture;
+   Texture* playButtonTexture;
+   Texture* creditsButtonTexture;
+   Texture* quitButtonTexture;
+   Texture* gameButtonTexture;
 };

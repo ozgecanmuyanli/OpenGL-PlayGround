@@ -40,5 +40,14 @@ void Texture::LoadTexture(char *texture_path)
 void Texture::ActivateTexture(GLenum texture_unit)
 {
 	glActiveTexture(texture_unit); // activate texture unit first
+}
+
+void Texture::BindTexture()
+{
 	glBindTexture(GL_TEXTURE_2D, this->texture);
+}
+
+void Texture::UnbindTexture()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

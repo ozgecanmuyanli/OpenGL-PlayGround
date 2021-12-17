@@ -56,9 +56,10 @@ void Button::InitialiseButton()
 	glEnableVertexAttribArray(1);
 }
 
-void Button::SetButtonTextures(Texture* buttonTexture)
+void Button::SetButtonTextures(Texture* textureRelease, Texture* texturePress)
 {
-	this->buttonTexture = buttonTexture;
+	buttonTextureRelease = textureRelease;
+	buttonTexturePress = texturePress;
 }
 
 void Button::DrawButton()
@@ -68,14 +69,30 @@ void Button::DrawButton()
 	buttonShader->setMat4("model", model);
 	buttonShader->setVec3("color", buttonColor);
 
-	buttonTexture->ActivateTexture(GL_TEXTURE0);
-	buttonShader->setInt("buttonTexture", 0);
+	std::cout << buttonTexturePress << std::endl;
+	std::cout << buttonTextureRelease << std::endl;
+
+	if (isButtonPressed)
+	{
+		buttonTexturePress->ActivateTexture(GL_TEXTURE0);
+		buttonTexturePress->BindTexture();
+		buttonShader->setInt("buttonTexture", 0);
+	}
+	else
+	{
+		buttonTextureRelease->ActivateTexture(GL_TEXTURE0);
+		buttonTextureRelease->BindTexture();
+		buttonShader->setInt("buttonTexture", 0);
+	}
 	
+	
+
 	glBindVertexArray(buttonVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 }
 
 void Button::CreateBoundingBox()
@@ -109,6 +126,14 @@ void Button::HandleMouseInput(GLFWwindow* mainWindow)
 
 	if (inside)
 	{
+		if (newState == GLFW_PRESS)
+		{
+			isButtonPressed = true;
+		}
+		else
+		{
+			isButtonPressed = false;
+		}
 		if (newState == GLFW_RELEASE && oldState == GLFW_PRESS)
 		{
 			if (!outPressed)
@@ -125,6 +150,7 @@ void Button::HandleMouseInput(GLFWwindow* mainWindow)
 	}
 	if (outside)
 	{
+		isButtonPressed = false;
 		isButtonClicked = false;
 		outPressed = false;
 

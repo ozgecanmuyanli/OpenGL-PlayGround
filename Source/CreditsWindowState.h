@@ -28,4 +28,5 @@ private:
    Texture* backButtonTexture;
    Texture* creditsHeaderButtonTexture;
    Texture* creditsWindowButtonTexture;
+   Texture* clickEffectTexture;
 };

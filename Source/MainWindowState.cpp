@@ -12,29 +12,25 @@ void MainWindowState::Initialise()
    buttonCredits = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(232.0f / 255.0f, 226.0f / 255.0f, 136.0f / 255.0f));
    buttonQuit = new Button(glm::vec3(0.0f, -300.0f, 0.0f), glm::vec3(179.0f / 255.0f, 57.0f / 255.0f, 81.0f / 255.0f));
 
-	gameButtonDefaultTexture = new Texture();
-	gameButtonDefaultTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
-	buttonGameName->SetButtonTextures(gameButtonDefaultTexture);
-	//gameButtonClickedTexture = new Texture();
-	//gameButtonClickedTexture->LoadTexture("../../Textures/gameButtonClicked.png");
+	clickEffectTexture = new Texture();
+	clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
 
-	playButtonDefaultTexture = new Texture();
-	playButtonDefaultTexture->LoadTexture("../../Textures/playButtonDefault.png");
-	buttonPlay->SetButtonTextures(playButtonDefaultTexture);
-	//playButtonClickedTexture = new Texture();
-	//playButtonClickedTexture->LoadTexture("../../Textures/playButtonClicked.png");
+	gameButtonTexture = new Texture();
+	gameButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+	buttonGameName->SetButtonTextures(gameButtonTexture, gameButtonTexture);
 
-	creditsButtonDefaultTexture = new Texture();
-	creditsButtonDefaultTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
-	buttonCredits->SetButtonTextures(creditsButtonDefaultTexture);
-	//creditsButtonClickedTexture = new Texture();
-	//creditsButtonClickedTexture->LoadTexture("../../Textures/creditsButtonClicked.png");
+	playButtonTexture = new Texture();
+	playButtonTexture->LoadTexture("../../Textures/playButtonDefault.png");
+	buttonPlay->SetButtonTextures(playButtonTexture, clickEffectTexture);
 
-	quitButtonDefaultTexture = new Texture();
-	quitButtonDefaultTexture->LoadTexture("../../Textures/quitButtonDefault.png");
-	buttonQuit->SetButtonTextures(quitButtonDefaultTexture);
-	//quitButtonClickedTexture = new Texture();
-	//quitButtonClickedTexture->LoadTexture("../../Textures/quitButtonClicked.png");	
+	creditsButtonTexture = new Texture();
+	creditsButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+	buttonCredits->SetButtonTextures(creditsButtonTexture, clickEffectTexture);
+
+
+	quitButtonTexture = new Texture();
+	quitButtonTexture->LoadTexture("../../Textures/quitButtonDefault.png");
+	buttonQuit->SetButtonTextures(quitButtonTexture, clickEffectTexture);
 }
 
 StateType MainWindowState::UpdateState(Window mainWindow)

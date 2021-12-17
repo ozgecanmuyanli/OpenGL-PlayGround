@@ -11,17 +11,20 @@ void CreditsWindowState::Initialise()
    creditsHeaderButton = new Button(glm::vec3(0.0f, 400.0f, 0.0f), glm::vec3(254.0f / 255.0f, 158.0f / 255.0f, 132.0f / 255.0f));
    creditsWindowButton = new Button(glm::vec3(0.0f), glm::vec3(247.0f / 255.0f, 231.0f / 255.0f, 190.0f / 255.0f), glm::vec3(2.0f, 12.0f, 1.0f));
 
+   clickEffectTexture = new Texture();
+   clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
+
    backButtonTexture = new Texture();
    backButtonTexture->LoadTexture("../../Textures/backButton.png");
-   backButton->SetButtonTextures(backButtonTexture);
+   backButton->SetButtonTextures(backButtonTexture, clickEffectTexture);
 
    creditsHeaderButtonTexture = new Texture();
    creditsHeaderButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
-   creditsHeaderButton->SetButtonTextures(creditsHeaderButtonTexture);
+   creditsHeaderButton->SetButtonTextures(creditsHeaderButtonTexture, creditsHeaderButtonTexture);
 
    creditsWindowButtonTexture = new Texture();
    creditsWindowButtonTexture->LoadTexture("../../Textures/creditsWindow.png");
-   creditsWindowButton->SetButtonTextures(creditsWindowButtonTexture);
+   creditsWindowButton->SetButtonTextures(creditsWindowButtonTexture, creditsWindowButtonTexture);
 }
 
 StateType CreditsWindowState::UpdateState(Window mainWindow)

@@ -20,14 +20,15 @@ public:
    void DrawButton();
    void CheckIsMouseInside(GLfloat xCursorPos, GLfloat yCursorPos);
    void CreateBoundingBox();
-   void SetButtonTextures(Texture* buttonTtexture);
+   void SetButtonTextures(Texture* textureRelease, Texture* texturePress);
 
    void HandleMouseInput(GLFWwindow* mainWindow);
    bool IsButtonClicked() { return isButtonClicked; }
 
 private:
    Shader* buttonShader;
-   Texture* buttonTexture;
+   Texture* buttonTextureRelease;
+   Texture* buttonTexturePress;
    unsigned int buttonWidth, buttonHeight;
    unsigned int numOfIndices, numOfVertices;
    unsigned int buttonVAO, buttonIBO, buttonVBO;
@@ -35,6 +36,7 @@ private:
    glm::mat4 projection, model;
    glm::vec4 boundingBoxLeftBottom, boundingBoxRightTop;
 
+   bool isButtonPressed = false;
    bool isButtonClicked = false;
    bool outPressed = false;
    //bool inPressed = false;
