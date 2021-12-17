@@ -9,6 +9,20 @@
 #include "Window.h"
 #include "enum.h"
 
+// COLORS of the game
+#define ORANGE_R (254.0f / 255.0f)
+#define ORANGE_G (158.0f / 255.0f)
+#define ORANGE_B (132.0f / 255.0f)
+#define YELLOW_R (247.0f / 255.0f)
+#define YELLOW_G (231.0f / 255.0f)
+#define YELLOW_B (190.0f / 255.0f)
+#define PINK_R   (179.0f / 255.0f)
+#define PINK_G   (57.0f / 255.0f)
+#define PINK_B   (81.0f / 255.0f)
+#define GREEN_R  (125.0f / 255.0f)
+#define GREEN_G  (206.0f / 255.0f)
+#define GREEN_B  (130.0f / 255.0f)
+
 class State
 {
 public:

@@ -7,9 +7,9 @@ CreditsWindowState::CreditsWindowState()
 
 void CreditsWindowState::Initialise()
 {
-   backButton = new Button(glm::vec3(200.0f, -400.0f, 0.0f), glm::vec3(179.0f / 255.0f, 57.0f / 255.0f, 81.0f / 255.0f));
-   creditsHeaderButton = new Button(glm::vec3(0.0f, 400.0f, 0.0f), glm::vec3(254.0f / 255.0f, 158.0f / 255.0f, 132.0f / 255.0f));
-   creditsWindowButton = new Button(glm::vec3(0.0f), glm::vec3(247.0f / 255.0f, 231.0f / 255.0f, 190.0f / 255.0f), glm::vec3(2.0f, 12.0f, 1.0f));
+   backButton = new Button(glm::vec3(200.0f, -400.0f, 0.0f), glm::vec3(PINK_R, PINK_G, PINK_B));
+   creditsHeaderButton = new Button(glm::vec3(0.0f, 400.0f, 0.0f), glm::vec3(ORANGE_R, ORANGE_G, ORANGE_B));
+   creditsWindowButton = new Button(glm::vec3(0.0f), glm::vec3(YELLOW_R, YELLOW_G, YELLOW_B), glm::vec3(2.0f, 12.0f, 1.0f));
 
    clickEffectTexture = new Texture();
    clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");

@@ -7,10 +7,10 @@ MainWindowState::MainWindowState()
 
 void MainWindowState::Initialise()
 {
-   buttonGameName = new Button(glm::vec3(0.0f, 300.0f, 0.0f), glm::vec3(254.0f / 255.0f, 158.0f / 255.0f, 132.0f / 255.0f), glm::vec3(3.0f, 1.0f, 1.0f));
-   buttonPlay = new Button(glm::vec3(0.0f, 100.0f, 0.0f), glm::vec3(125.0f / 255.0f, 206.0f / 255.0f, 130.0f / 255.0f));
-   buttonCredits = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(232.0f / 255.0f, 226.0f / 255.0f, 136.0f / 255.0f));
-   buttonQuit = new Button(glm::vec3(0.0f, -300.0f, 0.0f), glm::vec3(179.0f / 255.0f, 57.0f / 255.0f, 81.0f / 255.0f));
+   buttonGameName = new Button(glm::vec3(0.0f, 300.0f, 0.0f), glm::vec3(ORANGE_R, ORANGE_G, ORANGE_B), glm::vec3(3.0f, 1.0f, 1.0f));
+   buttonPlay = new Button(glm::vec3(0.0f, 100.0f, 0.0f), glm::vec3(GREEN_R, GREEN_G, GREEN_B));
+   buttonCredits = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(YELLOW_R, YELLOW_G, YELLOW_B));
+   buttonQuit = new Button(glm::vec3(0.0f, -300.0f, 0.0f), glm::vec3(PINK_R, PINK_G, PINK_B));
 
 	clickEffectTexture = new Texture();
 	clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");

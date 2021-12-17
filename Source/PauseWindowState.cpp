@@ -7,8 +7,8 @@ PauseWindowState::PauseWindowState()
 
 void PauseWindowState::Initialise()
 {
-   resumeButton = new Button(glm::vec3(0.0f, 100.0f, 0.0f), glm::vec3(254.0f / 255.0f, 158.0f / 255.0f, 132.0f / 255.0f));
-   backToMainManuButton = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(179.0f / 255.0f, 57.0f / 255.0f, 81.0f / 255.0f));
+   resumeButton = new Button(glm::vec3(0.0f, 100.0f, 0.0f), glm::vec3(ORANGE_R, ORANGE_G, ORANGE_B));
+   backToMainManuButton = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(PINK_R, PINK_G, PINK_B));
 
    clickEffectTexture = new Texture();
    clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
