@@ -13,27 +13,27 @@ void MainWindowState::Initialise()
    buttonQuit = new Button(glm::vec3(0.0f, -300.0f, 0.0f), glm::vec3(PINK_R, PINK_G, PINK_B));
 
 	clickEffectTexture = new Texture();
-	clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
+	clickEffectTexture->LoadTextureGPU("../../Textures/clickEffect.png");
 
 	gameButtonTexture = new Texture();
-	gameButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+	gameButtonTexture->LoadTextureGPU("../../Textures/creditsButtonDefault.png");
 	buttonGameName->SetButtonTextures(gameButtonTexture, gameButtonTexture);
 
 	playButtonTexture = new Texture();
-	playButtonTexture->LoadTexture("../../Textures/playButtonDefault.png");
+	playButtonTexture->LoadTextureGPU("../../Textures/playButtonDefault.png");
 	buttonPlay->SetButtonTextures(playButtonTexture, clickEffectTexture);
 
 	creditsButtonTexture = new Texture();
-	creditsButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+	creditsButtonTexture->LoadTextureGPU("../../Textures/creditsButtonDefault.png");
 	buttonCredits->SetButtonTextures(creditsButtonTexture, clickEffectTexture);
 
 
 	quitButtonTexture = new Texture();
-	quitButtonTexture->LoadTexture("../../Textures/quitButtonDefault.png");
+	quitButtonTexture->LoadTextureGPU("../../Textures/quitButtonDefault.png");
 	buttonQuit->SetButtonTextures(quitButtonTexture, clickEffectTexture);
 }
 
-StateType MainWindowState::UpdateState(Window mainWindow)
+StateType MainWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 {
 
 	buttonPlay->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());

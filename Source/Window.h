@@ -7,45 +7,46 @@
 #include <imgui-master/imgui_impl_glfw.h>
 #include <imgui-master/imgui_impl_opengl3.h>
 #include "Button.h"
-
+#include "Camera.h"
 
 class Window
 {
 public:
+   GLFWwindow* mainWindow;
+
    Window();
    Window(GLint windowWidth, GLint windowHeight);
-
-   int Initialise();
    GLint getBufferWidth() { return bufferWidth; }
    GLint getBufferHeight() { return bufferHeight; }
-
    bool getShouldClose() { return glfwWindowShouldClose(mainWindow); }
+   void swapBuffers() { glfwSwapBuffers(mainWindow); }
+   int Initialise();
 
+   void setWindowCamera(Camera* pCamera);
    bool* getsKeys() { return keys; }
-   GLfloat getXChange();
-   GLfloat getYChange();
    double getCursorPosX();
    double getCursorPosY();
    GLFWwindow* getWindow() { return mainWindow; }
-
-   void swapBuffers() { glfwSwapBuffers(mainWindow); }
+   static Window* Get() { return application; };
+   static void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+   void SetMousePos(GLFWwindow* window, float x, float  y);
 
    ~Window();
 
+protected:
+   static Window* application;
+   bool mouseFirstMoved;
+   double lastX;
+   double lastY;
+
 private:
-   GLFWwindow* mainWindow;
+   Camera *camera;
 
    GLint width, height;
    GLint bufferWidth, bufferHeight;
-
    bool keys[1024];
-
-   GLfloat lastX, lastY, xChange, yChange;
-   double xPosition, yPosition;
-   bool mouseFirstMoved;
+   double xPosition, yPosition; 
    
    void createCallbacks();
    static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);
-   static void handleMouseMove(GLFWwindow* window, double xPos, double yPos);
-   static void handleMouseButton(GLFWwindow* window,int, int, int);
 };

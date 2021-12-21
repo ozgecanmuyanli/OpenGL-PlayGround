@@ -11,18 +11,18 @@ void PauseWindowState::Initialise()
    backToMainManuButton = new Button(glm::vec3(0.0f, -100.0f, 0.0f), glm::vec3(PINK_R, PINK_G, PINK_B));
 
    clickEffectTexture = new Texture();
-   clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
+   clickEffectTexture->LoadTextureGPU("../../Textures/clickEffect.png");
 
    resumeButtonTexture = new Texture();
-   resumeButtonTexture->LoadTexture("../../Textures/resume.png");
+   resumeButtonTexture->LoadTextureGPU("../../Textures/resume.png");
    resumeButton->SetButtonTextures(resumeButtonTexture, clickEffectTexture);
 
    backToMainManuButtonTexture = new Texture();
-   backToMainManuButtonTexture->LoadTexture("../../Textures/backToMainMenu.png");
+   backToMainManuButtonTexture->LoadTextureGPU("../../Textures/backToMainMenu.png");
    backToMainManuButton->SetButtonTextures(backToMainManuButtonTexture, clickEffectTexture);
 }
 
-StateType PauseWindowState::UpdateState(Window mainWindow)
+StateType PauseWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 {
    backToMainManuButton->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
    backToMainManuButton->HandleMouseInput(mainWindow.getWindow());

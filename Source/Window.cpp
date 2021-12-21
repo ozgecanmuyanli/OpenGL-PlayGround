@@ -1,5 +1,6 @@
 #include "Window.h"
 
+Window* Window::application = NULL;
 
 Window::Window()
 {
@@ -10,12 +11,11 @@ Window::Window()
    {
       keys[i] = 0;
    }
-   xChange = 0.0f;
-   yChange = 0.0f;
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight)
 {
+   application = this;
    width = windowWidth;
    height = windowHeight;
 
@@ -23,8 +23,6 @@ Window::Window(GLint windowWidth, GLint windowHeight)
    {
       keys[i] = 0;
    }
-   xChange = 0.0f;
-   yChange = 0.0f;
 }
 int Window::Initialise()
 {
@@ -85,22 +83,48 @@ int Window::Initialise()
 void Window::createCallbacks()
 {
    glfwSetKeyCallback(mainWindow, handleKeys);
-   glfwSetCursorPosCallback(mainWindow, handleMouseMove);
-   glfwSetMouseButtonCallback(mainWindow, handleMouseButton);
+   glfwSetCursorPosCallback(mainWindow, MouseCallback);
 }
 
-GLfloat Window::getXChange()
+void Window::MouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
-   GLfloat thChange = xChange;
-   xChange = 0.0f;
-   return thChange;
+   // for camera movement with right click
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+   {
+      Get()->SetMousePos(window, xpos, ypos);
+   }
+   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+   {
+      Get()->mouseFirstMoved = true;
+   }
+
+   // for button click
+   glfwGetCursorPos(window, &xpos, &ypos);
+   Get()->xPosition = xpos;
+   Get()->yPosition = ypos;
 }
 
-GLfloat Window::getYChange()
+void Window::SetMousePos(GLFWwindow* window, float x, float  y)
 {
-   GLfloat thChange = yChange;
-   yChange = 0.0f;
-   return thChange;
+   if (mouseFirstMoved)
+   {
+      lastX = x;
+      lastY = y;
+      mouseFirstMoved = false;
+   }
+
+   float xoffset = x - lastX;
+   float yoffset = lastY - y; 
+
+   lastX = x;
+   lastY = y;
+
+   this->camera->mouseControl(xoffset, yoffset);
+}
+
+void Window::setWindowCamera(Camera* pCamera)
+{
+   this->camera = pCamera;
 }
 
 double Window::getCursorPosX()
@@ -111,7 +135,6 @@ double Window::getCursorPosY()
 {
    return (450 - yPosition);
 }
-
 
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
@@ -131,39 +154,6 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
          theWindow->keys[key] = false;
       }
    }
-}
-
-void Window::handleMouseMove(GLFWwindow* window, double xPos, double yPos)
-{
-   Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-   {
-      if (theWindow->mouseFirstMoved)
-      {
-         theWindow->lastX = xPos;
-         theWindow->lastY = yPos;
-         theWindow->mouseFirstMoved = false;
-      }
-      theWindow->xChange = xPos - theWindow->lastX;
-      theWindow->yChange = theWindow->lastY - yPos;
-      theWindow->lastX = xPos;
-      theWindow->lastY = yPos;
-   }
-   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
-   {
-      theWindow->mouseFirstMoved = true;
-   }
-
-   glfwGetCursorPos(window, &xPos, &yPos);
-   theWindow->xPosition = xPos;
-   theWindow->yPosition = yPos;
-
-}
-
-
-void Window::handleMouseButton(GLFWwindow* window, int, int, int)
-{
-   Window* theWindow = (Window*)(glfwGetWindowUserPointer(window));
 }
 
 Window::~Window() 

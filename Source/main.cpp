@@ -31,8 +31,8 @@
 
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
-Window mainWindow;
-Camera camera;
+Window *cWindow;
+Camera *camera;
 
 State* currentState;
 StateType returnedState;
@@ -48,8 +48,8 @@ void Init();
 
 void main()
 {
-	mainWindow = Window(SCR_WIDTH, SCR_HEIGHT);
-	mainWindow.Initialise();
+	cWindow = new Window(SCR_WIDTH, SCR_HEIGHT);
+	cWindow->Initialise();
 	glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 
 	Init();
@@ -58,14 +58,18 @@ void main()
 
 void Init()
 {
+	camera = new Camera(glm::vec3(3.5f, 2.5f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 20.0f, 0.1f);
+
 	mainWindowState = new MainWindowState();
 	creditsWindowState = new CreditsWindowState();
 	gamePlayWindowState = new GamePlayWindowState();
 	pauseWindowState = new PauseWindowState();
 
+	cWindow->setWindowCamera(camera);
 	mainWindowState->Initialise();
 	creditsWindowState->Initialise();
 	gamePlayWindowState->Initialise();
+	gamePlayWindowState->setStateCamera(camera);
 	pauseWindowState->Initialise();
 
 	currentState = mainWindowState;
@@ -73,19 +77,18 @@ void Init()
 
 void MainLoop()
 {
-	while (!mainWindow.getShouldClose())
+	while (!cWindow->getShouldClose())
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		glfwPollEvents();
-		camera.keyControl(mainWindow.getsKeys(), deltaTime);
-		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
-		bool* keys = mainWindow.getsKeys();
+		camera->keyControl(cWindow->getsKeys(), deltaTime);
+		bool* keys = cWindow->getsKeys();
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		returnedState = currentState->UpdateState(mainWindow);
+		returnedState = currentState->UpdateState(*cWindow, deltaTime);
 
 		if (returnedState != currentState->stateType)
 		{
@@ -109,7 +112,7 @@ void MainLoop()
 
 		currentState->RenderState();
 
-		mainWindow.swapBuffers();
+		cWindow->swapBuffers();
 	}
 }
 

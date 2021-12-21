@@ -23,12 +23,16 @@
 #define GREEN_G  (206.0f / 255.0f)
 #define GREEN_B  (130.0f / 255.0f)
 
+#define FOV      (45.0F)
+#define NEAR     (0.1F)
+#define FAR      (100.0F)
+
 class State
 {
 public:
    State();
 
-   virtual StateType UpdateState(Window mainWindow);
+   virtual StateType UpdateState(Window mainWindow, GLfloat deltaTime);
    virtual void RenderState();
    StateType stateType;
 

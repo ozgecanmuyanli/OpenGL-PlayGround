@@ -69,9 +69,6 @@ void Button::DrawButton()
 	buttonShader->setMat4("model", model);
 	buttonShader->setVec3("color", buttonColor);
 
-	std::cout << buttonTexturePress << std::endl;
-	std::cout << buttonTextureRelease << std::endl;
-
 	if (isButtonPressed)
 	{
 		buttonTexturePress->ActivateTexture(GL_TEXTURE0);
@@ -85,8 +82,6 @@ void Button::DrawButton()
 		buttonShader->setInt("buttonTexture", 0);
 	}
 	
-	
-
 	glBindVertexArray(buttonVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

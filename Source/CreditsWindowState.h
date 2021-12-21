@@ -17,7 +17,7 @@ public:
    CreditsWindowState();
 
    void Initialise();
-   StateType UpdateState(Window mainWindow);
+   StateType UpdateState(Window mainWindow, GLfloat deltaTime);
    void RenderState();
 
 

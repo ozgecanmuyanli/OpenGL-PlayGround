@@ -7,9 +7,14 @@ Texture::Texture()
 	int nrChannels = 0;
 }
 
-void Texture::LoadTexture(char *texture_path)
+void Texture::LoadTextureCPU(char* texture_path)
 {
-	unsigned char* texture_data = stbi_load(texture_path, &texture_width, &texture_height, &nrChannels, 0);
+	texture_data = stbi_load(texture_path, &texture_width, &texture_height, &nrChannels, 0);
+}
+
+void Texture::LoadTextureGPU(char *texture_path)
+{
+	texture_data = stbi_load(texture_path, &texture_width, &texture_height, &nrChannels, 0);
 	int channel = 0;
 	if (nrChannels == 4)
 	{
@@ -51,3 +56,43 @@ void Texture::UnbindTexture()
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void Texture::SetMapTexture()
+{
+	unsigned char* pixelOffset;
+	float red, green, blue;
+	
+	for (int i = 0; i < texture_width; i++)
+	{
+		for (int j = 0; j < texture_height; j++)
+		{
+			pixelOffset = texture_data + (j * texture_width + i) * 3;
+			red = pixelOffset[0]; //wall
+			green = pixelOffset[1]; //tree
+			blue = pixelOffset[2]; //water
+
+			if (red > 0 && green == 0 && blue == 0)
+			{
+				wallEntityTranslateValues.push_back(glm::vec2(i, j));
+			}
+			else if (red == 0 && green > 0 && blue == 0)
+			{
+				treeEntityTranslateValues.push_back(glm::vec2(i, j));
+			}
+			else if (red == 0 && green == 0 && blue > 0)
+			{
+				waterEntityTranslateValues.push_back(glm::vec2(i, j));
+			}
+			else if (red == 0 && green == 0 && blue == 0)
+			{
+				groundEntityTranslateValues.push_back(glm::vec2(i, j));
+			}
+			else if (red > 0 && green > 0 && blue > 0)
+			{
+				goldenEntityTranslateValues.push_back(glm::vec2(i, j));
+			}
+		}
+	}
+}
+
+

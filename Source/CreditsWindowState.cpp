@@ -12,22 +12,22 @@ void CreditsWindowState::Initialise()
    creditsWindowButton = new Button(glm::vec3(0.0f), glm::vec3(YELLOW_R, YELLOW_G, YELLOW_B), glm::vec3(2.0f, 12.0f, 1.0f));
 
    clickEffectTexture = new Texture();
-   clickEffectTexture->LoadTexture("../../Textures/clickEffect.png");
+   clickEffectTexture->LoadTextureGPU("../../Textures/clickEffect.png");
 
    backButtonTexture = new Texture();
-   backButtonTexture->LoadTexture("../../Textures/backButton.png");
+   backButtonTexture->LoadTextureGPU("../../Textures/backButton.png");
    backButton->SetButtonTextures(backButtonTexture, clickEffectTexture);
 
    creditsHeaderButtonTexture = new Texture();
-   creditsHeaderButtonTexture->LoadTexture("../../Textures/creditsButtonDefault.png");
+   creditsHeaderButtonTexture->LoadTextureGPU("../../Textures/creditsButtonDefault.png");
    creditsHeaderButton->SetButtonTextures(creditsHeaderButtonTexture, creditsHeaderButtonTexture);
 
    creditsWindowButtonTexture = new Texture();
-   creditsWindowButtonTexture->LoadTexture("../../Textures/creditsWindow.png");
+   creditsWindowButtonTexture->LoadTextureGPU("../../Textures/creditsWindow.png");
    creditsWindowButton->SetButtonTextures(creditsWindowButtonTexture, creditsWindowButtonTexture);
 }
 
-StateType CreditsWindowState::UpdateState(Window mainWindow)
+StateType CreditsWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 {
    backButton->CheckIsMouseInside((float)mainWindow.getCursorPosX(), (float)mainWindow.getCursorPosY());
    backButton->HandleMouseInput(mainWindow.getWindow());
