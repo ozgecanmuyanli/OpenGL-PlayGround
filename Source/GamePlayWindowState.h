@@ -13,13 +13,6 @@
 #include "Model.h"
 #include "Camera.h"
 
-#define WALL_R     (255.0F)
-#define WALL_G     (0.0F)
-#define WALL_B     (0.0F)
-#define WATER_R    (0.0F)
-#define WATER_G    (0.0F)
-#define WATER_B    (255.0F)
-
 class GamePlayWindowState : public State
 {
 public:

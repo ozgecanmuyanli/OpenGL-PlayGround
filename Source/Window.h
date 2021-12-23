@@ -30,6 +30,7 @@ public:
    static Window* Get() { return application; };
    static void MouseCallback(GLFWwindow* window, double xpos, double ypos);
    void SetMousePos(GLFWwindow* window, float x, float  y);
+   void DrawGUI();
 
    ~Window();
 
@@ -40,7 +41,7 @@ protected:
    double lastY;
 
 private:
-   Camera *camera;
+   Camera* camera;
 
    GLint width, height;
    GLint bufferWidth, bufferHeight;

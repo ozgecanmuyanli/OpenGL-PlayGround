@@ -1,4 +1,4 @@
-#include "Window.h"
+﻿#include "Window.h"
 
 Window* Window::application = NULL;
 
@@ -154,6 +154,11 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
          theWindow->keys[key] = false;
       }
    }
+}
+
+void Window::DrawGUI()
+{
+
 }
 
 Window::~Window() 

@@ -1,4 +1,7 @@
-# include "Camera.h"
+﻿# include "Camera.h"
+#include <imgui-master/imgui.h>
+#include <imgui-master/imgui_impl_glfw.h>
+#include <imgui-master/imgui_impl_opengl3.h>
 
 Camera::Camera() { }
 
@@ -13,36 +16,161 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
    moveSpeed = startMoveSpeed;
    turnSpeed = startTurnSpeed;
 
+   accAcc = 0.02;
+   maxAcc = 5.3f;
+   maxSpeed = 0.6f;
+
    update();
+}
+
+void Camera::drawCameraGUI()
+{
+   if (ImGui::Begin("Camera Properties"))
+   {
+      ImGui::DragFloat("accAcc", &accAcc, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("maxAcc", &maxAcc, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("maxSpeed", &maxSpeed, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
+   }
+   ImGui::End();
 }
 
 void Camera::keyControl(bool* keys, GLfloat deltaTime)
 {
-   GLfloat velocity = moveSpeed * deltaTime * 0.25;
+   static float a = 0.0f; 
+   static float t = 0.0f;
+
    if (keys[GLFW_KEY_W])
    {
-      position += front * velocity;
+      a += accAcc;
+      if (a >= maxAcc)
+      {
+         a = maxAcc;
+      }
+      velocityW += a;
+      if (velocityW >= maxSpeed)
+      {
+         velocityW = maxSpeed;
+      }
+
+      position.x += front.x * (velocityW)*deltaTime;
+      position.z += front.z * (velocityW)*deltaTime;
+   }
+   else
+   {
+      a -= accAcc;
+      if (a <= 0.0f)
+      {
+         a = 0.015f;
+      }
+      velocityW -= a;
+      if (velocityW <= 0.0f)
+      {
+         velocityW = 0.0f;
+      }
+      position.x += front.x * (velocityW)*deltaTime;
+      position.z += front.z * (velocityW)*deltaTime;
    }
    if (keys[GLFW_KEY_S])
    {
-      position -= front * velocity;
+      a += accAcc;
+      if (a >= maxAcc)
+      {
+         a = maxAcc;
+      }
+      velocityS += a;
+      if (velocityS >= maxSpeed)
+      {
+         velocityS = maxSpeed;
+      }
+ 
+      position.x -= front.x * velocityS * deltaTime;
+      position.z -= front.z * velocityS * deltaTime;
+   }
+   else
+   {
+      a -= accAcc;
+      if (a <= 0.0f)
+      {
+         a = 0.015f;
+      }
+      velocityS -= a;
+      if (velocityS <= 0.0f)
+      {
+         velocityS = 0.0f;
+      }
+
+      position.x -= front.x * velocityS * deltaTime;
+      position.z -= front.z * velocityS * deltaTime;
    }
    if (keys[GLFW_KEY_A])
    {
-      position -= right * velocity;
+      a += accAcc;
+      if (a >= maxAcc)
+      {
+         a = maxAcc;
+      }
+      velocityA += a;
+      if (velocityA >= maxSpeed)
+      {
+         velocityA = maxSpeed;
+      }
+      position.x -= right.x * velocityA * deltaTime;
+      position.z -= right.z * velocityA * deltaTime;
+   }
+   else
+   {
+      a -= accAcc;
+      if (a <= 0.0f)
+      {
+         a = 0.015f;
+      }
+      velocityA -= a;
+      if (velocityA <= 0.0f)
+      {
+         velocityA = 0.0f;
+      }
+      position.x -= right.x * velocityA * deltaTime;
+      position.z -= right.z * velocityA * deltaTime;
    }
    if (keys[GLFW_KEY_D])
    {
-      position += right * velocity;
+      a += accAcc;
+      if (a >= maxAcc)
+      {
+         a = maxAcc;
+      }
+      velocityD += a;
+      if (velocityD >= maxSpeed)
+      {
+         velocityD = maxSpeed;
+      }
+      position.x += right.x * velocityD * deltaTime;
+      position.z += right.z * velocityD * deltaTime;
    }
-   if (keys[GLFW_KEY_Q])
+   else
    {
-      position += up * velocity;
+      a -= accAcc;
+      if (a <= 0.0f)
+      {
+         a = 0.015f;
+      }
+      velocityD -= a;
+      if (velocityD <= 0.0f)
+      {
+         velocityD = 0.0f;
+      }
+      position.x += right.x * velocityD * deltaTime;
+      position.z += right.z * velocityD * deltaTime;
    }
-   if (keys[GLFW_KEY_E])
-   {
-      position -= up * velocity;
-   }
+
+   //if (keys[GLFW_KEY_Q])
+   //{
+   //   position += up * velocity;
+   //}
+   //if (keys[GLFW_KEY_E])
+   //{
+   //   position -= up * velocity;
+   //}
 }
 
 void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
@@ -53,13 +181,13 @@ void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
    yaw += xChange;
    pitch += yChange;
 
-   if (pitch > 89.0f)
+   if (pitch > 30.0f)
    {
-      pitch = 89.0f;
+      pitch = 30.0f;
    }
-   if (pitch < -89.0f)
+   if (pitch < -30.0f)
    {
-      pitch = -89.0f;
+      pitch = -30.0f;
    }
 
    update();

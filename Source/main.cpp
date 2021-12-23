@@ -58,7 +58,7 @@ void main()
 
 void Init()
 {
-	camera = new Camera(glm::vec3(0.0f, 1.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f);
+	camera = new Camera(glm::vec3(0.0f, 0.1f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 0.005f, 0.1f);
 
 	mainWindowState = new MainWindowState();
 	creditsWindowState = new CreditsWindowState();
@@ -79,6 +79,12 @@ void MainLoop()
 {
 	while (!cWindow->getShouldClose())
 	{
+		// IMGUI
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		// END IMGUI
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -112,7 +118,11 @@ void MainLoop()
 
 		currentState->RenderState();
 
+		//cWindow->DrawGUI();
+		camera->drawCameraGUI();
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		cWindow->swapBuffers();
 	}
 }
-

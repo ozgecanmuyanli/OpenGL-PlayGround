@@ -7,17 +7,23 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+
 class Camera
 {
 public:
    Camera();
    Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLfloat startPitch, GLfloat startMoveSpeed, GLfloat startTurnSpeed);
 
+   void drawCameraGUI();
    void keyControl(bool* keys, GLfloat deltaTime);
    void mouseControl(float xChange, float yChange);
 
    glm::vec3 getCameraPosition();
    glm::mat4 calculateViewMatrix();
+
+   float accAcc = 0.0;
+   float maxAcc = 0.0;
+   float maxSpeed = 0.0;
 
    ~Camera();
 
@@ -33,6 +39,11 @@ private:
 
    GLfloat moveSpeed;
    GLfloat turnSpeed;
+
+   GLfloat velocityW = 0.0f;
+   GLfloat velocityA = 0.0f;
+   GLfloat velocityS = 0.0f;
+   GLfloat velocityD = 0.0f;
 
    void update();
 };
