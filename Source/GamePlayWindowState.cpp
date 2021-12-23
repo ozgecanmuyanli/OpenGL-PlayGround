@@ -7,22 +7,31 @@ void GamePlayWindowState::setStateCamera(Camera* pCamera)
 
 GamePlayWindowState::GamePlayWindowState()
 {
-   gameShader = new Shader("../../Shaders/gameShader.vs", "../../Shaders/gameShader.fs");
+   mapShader = new Shader("../../Shaders/mapShader.vs", "../../Shaders/mapShader.fs");
+   cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
+
    modelMatrix = glm::mat4(1.0f);
    viewMatrix = glm::mat4(1.0f);
+   cubeModelMatrix = glm::mat4(1.0f);
+   modelColor = glm::vec3(1.0f);
 
    stateType = GAME_PLAY_WINDOW;
 }
 
 void GamePlayWindowState::Initialise()
 {
+   cubeModel = new Model("../../Models/cube1x1.obj");
+
    mapTexture = new Texture();
-   mapTexture->LoadTextureCPU("../../Textures/deneme.bmp");
+   mapTexture->LoadTextureCPU("../../Textures/map.bmp");
    mapTexture->SetMapTexture();
 
-   GenerateGrids(mapTexture->GetTextureWidth(), mapTexture->GetTextureHeight());
-   gridObject = new Mesh();
-   gridObject->CreateMesh(&gridVertices[0], &gridIndices[0], gridVertices.size(), gridIndices.size());
+   wallTexture = new Texture();
+   wallTexture->LoadTextureGPU("../../Textures/wall.png");
+   woodTexture = new Texture();
+   woodTexture->LoadTextureGPU("../../Textures/wood.png");
+   groundTexture = new Texture();
+   groundTexture->LoadTextureGPU("../../Textures/albedo.png");
 }
 
 StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
@@ -44,56 +53,55 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 
 void GamePlayWindowState::RenderState()
 {
-   DrawGrid();
+   DrawMap();
+   DrawEntity(wallTexture, mapTexture->waterEntityTranslateValues);
+   DrawEntity(woodTexture, mapTexture->wallEntityTranslateValues);
 }
 
-void GamePlayWindowState::DrawWall()
+void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::vec2> entity)
 {
+   entityTexture->ActivateTexture(GL_TEXTURE0);
+   entityTexture->BindTexture();
 
-}
+   cubeShader->use();
+   cubeShader->setMat4("projection", projectionMatrix);
+   cubeShader->setMat4("view", viewMatrix);
+   cubeShader->setInt("entityTexture", 0);
 
-void GamePlayWindowState::DrawGrid()
-{
-   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-   mapTexture->LoadTextureGPU("../../Textures/deneme.bmp");
-   mapTexture->ActivateTexture(GL_TEXTURE0);
-   mapTexture->BindTexture();
-
-   gameShader->use();
-   gameShader->setInt("mapTexture", 0);
-
-   // GRID SCALE
-   gameShader->setMat4("modelMatrix", modelMatrix);
-   gameShader->setMat4("projectionMatrix", projectionMatrix);
-   gameShader->setMat4("viewMatrix", viewMatrix);
-
-   gridObject->RenderMesh();
-}
-
-void GamePlayWindowState::GenerateGrids(unsigned int gridWidth, unsigned int gridHeight)
-{
-   // generate vertices
-   for (int i = 0; i < gridWidth; i++)
+   for (unsigned int i = 0; i < entity.size(); i++)
    {
-      for (int j = 0; j < gridHeight; j++)
-      {
-         gridVertices.push_back((float)i / gridWidth);
-         gridVertices.push_back(0.0f);
-         gridVertices.push_back((float)j / gridHeight);
-      }
+      cubeModelMatrix = glm::mat4(1.0f);
+      cubeModelMatrix = glm::translate(cubeModelMatrix, glm::vec3(entity[i].x,
+                                                                  1.0f / mapTexture->GetTextureWidth(),
+                                                                  entity[i].y));
+      cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(1.0f / mapTexture->GetTextureWidth()));
+      cubeShader->setMat4("model", cubeModelMatrix);
+      cubeModel->Draw(*cubeShader);
    }
+}
 
-   // generate indices
-   for (size_t i = 0; i < gridHeight * (gridWidth - 1); i = i + gridHeight)
+void GamePlayWindowState::DrawMap()
+{
+   static GLuint gridVAO;
+   if (!gridVAO)
    {
-      for (size_t j = i; j < i + (gridHeight - 1); j++)
-      {
-         gridIndices.push_back(j);
-         gridIndices.push_back(j + gridHeight);
-         gridIndices.push_back(j + 1);
-         gridIndices.push_back(j + 1);
-         gridIndices.push_back(j + gridHeight);
-         gridIndices.push_back(j + gridHeight + 1);
-      }
+      glGenVertexArrays(1, &gridVAO);
    }
+   glBindVertexArray(gridVAO);
+
+   groundTexture->ActivateTexture(GL_TEXTURE0);
+   groundTexture->BindTexture();
+   mapShader->use();
+
+   // TO SEE ORIGINAL MAP TEXTURE
+   //mapTexture->ActivateTexture(GL_TEXTURE0);
+   //mapTexture->BindTexture();
+   mapShader->setInt("mapTexture", 0);
+
+   mapShader->setMat4("modelMatrix", modelMatrix);
+   mapShader->setMat4("projectionMatrix", projectionMatrix);
+   mapShader->setMat4("viewMatrix", viewMatrix);
+
+   glDrawArrays(GL_TRIANGLES, 0, 6);
+   glBindVertexArray(0);
 }

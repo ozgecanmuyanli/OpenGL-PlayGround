@@ -27,7 +27,7 @@ public:
    std::vector<glm::vec2> wallEntityTranslateValues;
    std::vector<glm::vec2> treeEntityTranslateValues;
    std::vector<glm::vec2> waterEntityTranslateValues;
-   std::vector<glm::vec2> groundEntityTranslateValues;
+   std::vector<glm::vec2> rockEntityTranslateValues;
    std::vector<glm::vec2> goldenEntityTranslateValues;
    std::vector<GLfloat> gridVertices;
 

@@ -10,6 +10,17 @@ Texture::Texture()
 void Texture::LoadTextureCPU(char* texture_path)
 {
 	texture_data = stbi_load(texture_path, &texture_width, &texture_height, &nrChannels, 0);
+
+	//stbi_set_flip_vertically_on_load(true);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture_width, texture_height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::LoadTextureGPU(char *texture_path)
@@ -61,6 +72,7 @@ void Texture::SetMapTexture()
 {
 	unsigned char* pixelOffset;
 	float red, green, blue;
+	float translateX, translateZ;
 	
 	for (int i = 0; i < texture_width; i++)
 	{
@@ -71,28 +83,33 @@ void Texture::SetMapTexture()
 			green = pixelOffset[1]; //tree
 			blue = pixelOffset[2]; //water
 
-			if (red > 0 && green == 0 && blue == 0)
+			// Pixels(i, j) are mapped according to texture coord
+			translateX = (2.0f * i/ texture_width) + (1.0f / texture_width) - 1.0f;
+			translateZ = -((2.0f * j/ texture_height) + (1.0f / texture_height) - 1.0f);
+
+			if (red == 0 && green == 0 && blue == 0)
 			{
-				wallEntityTranslateValues.push_back(glm::vec2(i, j));
+				rockEntityTranslateValues.push_back(glm::vec2(translateX, translateZ));
+			}
+			else if (red > 0 && green == 0 && blue == 0)
+			{
+				wallEntityTranslateValues.push_back(glm::vec2(translateX, translateZ));
 			}
 			else if (red == 0 && green > 0 && blue == 0)
 			{
-				treeEntityTranslateValues.push_back(glm::vec2(i, j));
+				treeEntityTranslateValues.push_back(glm::vec2(translateX, translateZ));
 			}
 			else if (red == 0 && green == 0 && blue > 0)
 			{
-				waterEntityTranslateValues.push_back(glm::vec2(i, j));
-			}
-			else if (red == 0 && green == 0 && blue == 0)
-			{
-				groundEntityTranslateValues.push_back(glm::vec2(i, j));
+				waterEntityTranslateValues.push_back(glm::vec2(translateX, translateZ));
 			}
 			else if (red > 0 && green > 0 && blue > 0)
 			{
-				goldenEntityTranslateValues.push_back(glm::vec2(i, j));
+				goldenEntityTranslateValues.push_back(glm::vec2(translateX, translateZ));
 			}
 		}
 	}
+	stbi_image_free(texture_data);
 }
 
 
