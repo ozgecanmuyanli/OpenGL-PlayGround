@@ -90,6 +90,7 @@ void MainLoop()
 		lastFrame = currentFrame;
 		glfwPollEvents();
 		camera->keyControl(cWindow->getsKeys(), deltaTime);
+		camera->ApplyHeadBob(deltaTime);
 		bool* keys = cWindow->getsKeys();
 		glClearColor(SCREEN_CLEAR_RED, SCREEN_CLEAR_GREEN, SCREEN_CLEAR_BLUE, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

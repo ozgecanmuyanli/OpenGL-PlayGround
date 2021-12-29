@@ -30,6 +30,7 @@ void Camera::drawCameraGUI()
       ImGui::DragFloat("accAcc", &accAcc, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
       ImGui::DragFloat("maxAcc", &maxAcc, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
       ImGui::DragFloat("maxSpeed", &maxSpeed, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::Text("%.3f", position.y);
    }
    ImGui::End();
 }
@@ -37,7 +38,6 @@ void Camera::drawCameraGUI()
 void Camera::keyControl(bool* keys, GLfloat deltaTime)
 {
    static float a = 0.0f; 
-   static float t = 0.0f;
 
    if (keys[GLFW_KEY_W])
    {
@@ -67,8 +67,9 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       {
          velocityW = 0.0f;
       }
-      position.x += front.x * (velocityW)*deltaTime;
-      position.z += front.z * (velocityW)*deltaTime;
+
+      position.x += front.x * velocityW * deltaTime;
+      position.z += front.z * velocityW * deltaTime;
    }
    if (keys[GLFW_KEY_S])
    {
@@ -114,6 +115,7 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       {
          velocityA = maxSpeed;
       }
+
       position.x -= right.x * velocityA * deltaTime;
       position.z -= right.z * velocityA * deltaTime;
    }
@@ -129,6 +131,7 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       {
          velocityA = 0.0f;
       }
+
       position.x -= right.x * velocityA * deltaTime;
       position.z -= right.z * velocityA * deltaTime;
    }
@@ -144,6 +147,7 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       {
          velocityD = maxSpeed;
       }
+
       position.x += right.x * velocityD * deltaTime;
       position.z += right.z * velocityD * deltaTime;
    }
@@ -159,6 +163,7 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       {
          velocityD = 0.0f;
       }
+
       position.x += right.x * velocityD * deltaTime;
       position.z += right.z * velocityD * deltaTime;
    }
@@ -201,6 +206,18 @@ glm::mat4 Camera::calculateViewMatrix()
 glm::vec3 Camera::getCameraPosition()
 {
    return position;
+}
+
+void Camera::ApplyHeadBob(GLfloat deltaTime)
+{
+   float bobOscillate;
+   
+   if ((velocityW > 0.01f) || (velocityA > 0.01f) || (velocityS > 0.01f) || (velocityD > 0.01f))
+   {
+      velocity = maxSpeed;
+      bobOscillate = sin((float)glfwGetTime() * velocity * (2 * 3.14f)) * 0.0005f;
+      position.y += bobOscillate;
+   }
 }
 
 void Camera::update()

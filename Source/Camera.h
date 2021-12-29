@@ -20,6 +20,7 @@ public:
 
    glm::vec3 getCameraPosition();
    glm::mat4 calculateViewMatrix();
+   void ApplyHeadBob(GLfloat deltaTime);
 
    float accAcc = 0.0;
    float maxAcc = 0.0;
@@ -44,6 +45,6 @@ private:
    GLfloat velocityA = 0.0f;
    GLfloat velocityS = 0.0f;
    GLfloat velocityD = 0.0f;
-
+   GLfloat velocity = 0.0f;
    void update();
 };
