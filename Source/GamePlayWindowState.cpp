@@ -31,7 +31,7 @@ void GamePlayWindowState::Initialise()
    woodTexture = new Texture();
    woodTexture->LoadTextureGPU("../../Textures/wood.png");
    groundTexture = new Texture();
-   groundTexture->LoadTextureGPU("../../Textures/albedo.png");
+   groundTexture->LoadTextureGPU("../../Textures/sponza_floor_a_diff.png");
 }
 
 StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
