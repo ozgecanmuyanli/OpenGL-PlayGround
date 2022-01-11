@@ -60,7 +60,7 @@ int Window::Initialise()
    }
 
    glEnable(GL_DEPTH_TEST);
-   glDepthMask(GL_TRUE);
+   //glDepthMask(GL_TRUE);
    glDepthFunc(GL_LESS);
 
    glViewport(0, 0, bufferWidth, bufferHeight);

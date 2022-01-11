@@ -77,6 +77,9 @@ void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::ve
       cubeShader->setMat4("model", cubeModelMatrix);
       cubeModel->Draw(*cubeShader);
    }
+
+   cubeShader->setVec3("lightDir", 0.0f, 0.0f, 0.3f);
+   cubeShader->setVec3("viewPos", this->camera->getCameraPosition());
 }
 
 void GamePlayWindowState::DrawMap()
@@ -100,6 +103,8 @@ void GamePlayWindowState::DrawMap()
    mapShader->setMat4("modelMatrix", modelMatrix);
    mapShader->setMat4("projectionMatrix", projectionMatrix);
    mapShader->setMat4("viewMatrix", viewMatrix);
+   mapShader->setVec3("lightDir", 0.0f, 0.0f, 0.3f);
+   mapShader->setVec3("viewPos", this->camera->getCameraPosition());
 
    glDrawArrays(GL_TRIANGLES, 0, 6);
    glBindVertexArray(0);
