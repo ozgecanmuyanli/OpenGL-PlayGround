@@ -13,7 +13,6 @@ GamePlayWindowState::GamePlayWindowState()
    modelMatrix = glm::mat4(1.0f);
    viewMatrix = glm::mat4(1.0f);
    cubeModelMatrix = glm::mat4(1.0f);
-   modelColor = glm::vec3(1.0f);
 
    stateType = GAME_PLAY_WINDOW;
 }

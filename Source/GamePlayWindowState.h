@@ -38,5 +38,4 @@ private:
 
    glm::mat4 modelMatrix, projectionMatrix, viewMatrix;
    glm::mat4 cubeModelMatrix;
-   glm::vec3 modelColor;
 };
