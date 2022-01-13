@@ -168,14 +168,14 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
       position.z += right.z * velocityD * deltaTime;
    }
 
-   //if (keys[GLFW_KEY_Q])
-   //{
-   //   position += up * velocity;
-   //}
-   //if (keys[GLFW_KEY_E])
-   //{
-   //   position -= up * velocity;
-   //}
+   if (keys[GLFW_KEY_Q])
+   {
+      position += up * 0.25f * deltaTime;
+   }
+   if (keys[GLFW_KEY_E])
+   {
+      position -= up * 0.25f * deltaTime;
+   }
 }
 
 void Camera::mouseControl(GLfloat xChange, GLfloat yChange)

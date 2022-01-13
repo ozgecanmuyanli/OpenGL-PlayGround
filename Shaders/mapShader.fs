@@ -5,38 +5,36 @@ in vec2 oTextureCoord;
 in vec3 oPosInWorldSpace;
 
 uniform sampler2D mapTexture;
-uniform vec3 lightDir;
+uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 vec3 oVertexNormal = vec3(0.0f, 1.0f, 0.0f);
 
 vec3 AddLight()
 {
-    vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);//
-    float ambientStrength = 0.8;
-    float specularStrength = 0.5f;
+	float specularStrength = 0.5;
+	float ambientStrength = 0.25;
+	float distance = length(lightPos - oPosInWorldSpace);
+    float attenuation = 1.0 / (1.0 + 0.22 * distance + 0.20 * (distance * distance));
 
-	// Amnient
-    vec3 ambient = ambientStrength * lightColor;
-
-	// Diffuse
-	vec3 vertexNormal = normalize(oVertexNormal);
-	vec3 lightDirection = normalize(-lightDir);
-	//vec3 lightDirection = normalize(lightPos - oPosInWorldSpace);
-    float diff = max(dot(vertexNormal, lightDirection), 0.0);
-    vec3 diffuse = diff * lightColor;
-
-    // Specular
+	vec3 normalMapValue = normalize(oVertexNormal);
+	vec3 pLightDir = normalize(oPosInWorldSpace - lightPos);
+	
+	vec3 reversedlightDir = -normalize(pLightDir);
+	float diffuse = max(dot(normalMapValue,reversedlightDir),0.0) * attenuation;
+	vec3 diffuseFactor = diffuse * texture(mapTexture,oTextureCoord).rgb;
+	
+	vec3 reflectDir = reflect(normalize(pLightDir), normalMapValue);
 	vec3 viewDir = normalize(viewPos - oPosInWorldSpace);
-    vec3 reflectDir = reflect(-lightDir, vertexNormal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-	vec3 specular = spec * lightColor;
+	float specular = pow(max(dot(viewDir, reflectDir), 0.0), 8) *attenuation;
+	vec3 specularFactor = vec3(specular * specularStrength);
 
-    vec3 phongLight = (ambient + diffuse + specular);
-    return phongLight;
+	vec3 ambientFactor = ambientStrength * texture(mapTexture,oTextureCoord).rgb;
+
+	return diffuseFactor + specularFactor + ambientFactor;
 }
 
 void main()
 {
-	FragColor = texture(mapTexture, oTextureCoord)  * vec4(AddLight(), 1.0f); 
+	FragColor = vec4(AddLight(), 1.0f); 
 }

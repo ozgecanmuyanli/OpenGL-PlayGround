@@ -9,6 +9,7 @@ GamePlayWindowState::GamePlayWindowState()
 {
    mapShader = new Shader("../../Shaders/mapShader.vs", "../../Shaders/mapShader.fs");
    cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
+   axisShader = new Shader("../../Shaders/axisShader.vs", "../../Shaders/axisShader.fs");
 
    modelMatrix = glm::mat4(1.0f);
    viewMatrix = glm::mat4(1.0f);
@@ -28,9 +29,12 @@ void GamePlayWindowState::Initialise()
    wallTexture = new Texture();
    wallTexture->LoadTextureGPU("../../Textures/wall.png");
    woodTexture = new Texture();
-   woodTexture->LoadTextureGPU("../../Textures/wood.png");
+   woodTexture->LoadTextureGPU("../../Textures/brickwall.jpg");
    groundTexture = new Texture();
    groundTexture->LoadTextureGPU("../../Textures/sponza_floor_a_diff.png");
+
+   normalMap = new Texture();
+   normalMap->LoadTextureGPU("../../Textures/brickwall_normal.jpg");
 }
 
 StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
@@ -53,7 +57,8 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 void GamePlayWindowState::RenderState()
 {
    DrawMap();
-   DrawEntity(wallTexture, mapTexture->waterEntityTranslateValues);
+   DrawAxis();
+   DrawEntity(woodTexture, mapTexture->waterEntityTranslateValues);
    DrawEntity(woodTexture, mapTexture->wallEntityTranslateValues);
 }
 
@@ -78,8 +83,11 @@ void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::ve
       cubeModel->Draw(*cubeShader);
    }
 
-   cubeShader->setVec3("lightDir", 0.0f, 0.0f, 0.3f);
+   cubeShader->setVec3("lightPos", 0.271438479, 0.199558944, 0.912041306);
    cubeShader->setVec3("viewPos", this->camera->getCameraPosition());
+   normalMap->ActivateTexture(GL_TEXTURE1);
+   normalMap->BindTexture();
+   cubeShader->setInt("normalMap", 1);
 }
 
 void GamePlayWindowState::DrawMap()
@@ -103,9 +111,25 @@ void GamePlayWindowState::DrawMap()
    mapShader->setMat4("modelMatrix", modelMatrix);
    mapShader->setMat4("projectionMatrix", projectionMatrix);
    mapShader->setMat4("viewMatrix", viewMatrix);
-   mapShader->setVec3("lightDir", 0.0f, 0.0f, 0.3f);
+   mapShader->setVec3("lightPos", 0.271438479, 0.199558944, 0.912041306);
    mapShader->setVec3("viewPos", this->camera->getCameraPosition());
 
    glDrawArrays(GL_TRIANGLES, 0, 6);
+   glBindVertexArray(0);
+}
+
+void GamePlayWindowState::DrawAxis()
+{
+   axisShader->use();
+   axisShader->setMat4("projectionMatrix", projectionMatrix);
+   axisShader->setMat4("viewMatrix", viewMatrix);
+
+   static GLuint axisVAO;
+   if (!axisVAO)
+   {
+      glGenVertexArrays(1, &axisVAO);
+   }
+   glBindVertexArray(axisVAO);
+   glDrawArrays(GL_LINES, 0, 6);
    glBindVertexArray(0);
 }

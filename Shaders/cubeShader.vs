@@ -16,7 +16,7 @@ void main()
 {
 	oPos = aPos;
 	oVertexNormal = aVertexNormal;
-	oTextureCoord = aTextureCoord;
+	oTextureCoord = aTextureCoord * 5.0f;
 	oPosInWorldSpace = (model * vec4(oPos, 1.0f)).xyz;
 	gl_Position = projection * view * model * vec4(oPos, 1.0f);	
 }

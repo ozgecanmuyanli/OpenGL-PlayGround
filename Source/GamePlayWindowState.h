@@ -24,15 +24,18 @@ public:
    void DrawMap();
    void DrawEntity(Texture* texture, std::vector<glm::vec2> entity);
    void setStateCamera(Camera* pCamera);
+   void DrawAxis();
 
 private:
    Camera* camera;
    Shader* mapShader;
    Shader* cubeShader;
+   Shader* axisShader;
    Texture* mapTexture;
    Texture* groundTexture;
    Texture* woodTexture;
    Texture* wallTexture;
+   Texture* normalMap;
    Model* cubeModel;
    bool* keys;
 
