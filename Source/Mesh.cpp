@@ -1,71 +1,67 @@
 # include "Mesh.h"
 
-Mesh::Mesh()
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
 {
-   VAO = 0;
-   VBO = 0;
-   IBO = 0;
-   indexCount = 0;
+   this->vertices = vertices;
+   this->indices = indices;
+   this->textures = textures;
+
+   setupMesh();
 }
 
-void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, unsigned int numOfVertices, unsigned int numOfIndices)
+void Mesh::Draw(Shader& shader)
 {
-	indexCount = numOfIndices;
-
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * numOfIndices, indices, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-	glEnableVertexAttribArray(0);
-
-	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	//glEnableVertexAttribArray(1);
-
-	//glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-	//glEnableVertexAttribArray(2);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+   unsigned int diffuseNr = 1;
+   unsigned int specularNr = 1;
+   unsigned int normalNr = 1;
+   unsigned int heightNr = 1;
+   for (unsigned int i = 0; i < textures.size(); i++)
+   {
+      glActiveTexture(GL_TEXTURE0 + i); // activate texture unit first
+      // retrieve texture number (the N in diffuse_textureN)
+      string number;
+      string name = textures[i].type;
+      if (name == "texture_diffuse")
+         number = std::to_string(diffuseNr++);
+      else if (name == "texture_specular")
+         number = std::to_string(specularNr++);
+      else if (name == "texture_normal")
+         number = std::to_string(normalNr++);
+      else if (name == "texture_height")
+         number = std::to_string(heightNr++);
+      shader.setInt((name + number).c_str(), i);
+      glBindTexture(GL_TEXTURE_2D, textures[i].textureID);
+   }
+   // draw mesh
+   glBindVertexArray(VAO);
+   glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+   glBindVertexArray(0);
+   glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::RenderMesh()
+void Mesh::setupMesh()
 {
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
-	//glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
-}
-
-void Mesh::ClearMesh()
-{
-	if (IBO != 0)
-	{
-		glDeleteBuffers(1, &IBO);
-		IBO = 0;
-	}
-	if (VBO != 0)
-	{
-		glDeleteBuffers(1, &VBO);
-		VBO = 0;
-	}
-	if (VAO != 0)
-	{
-		glDeleteBuffers(1, &VAO);
-		VAO = 0;
-	}
-	indexCount = 0;
-}
-
-Mesh::~Mesh()
-{
-	ClearMesh();
+   glGenVertexArrays(1, &VAO);
+   glGenBuffers(1, &VBO);
+   glGenBuffers(1, &EBO);
+   glBindVertexArray(VAO);
+   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex),
+      &vertices[0], GL_STATIC_DRAW);
+   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() *
+      sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+   // vertex positions
+   glEnableVertexAttribArray(0);
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+      (void*)0);
+   // vertex normals
+   glEnableVertexAttribArray(1);
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+      (void*)offsetof(Vertex, Normal));
+   // vertex texture coords
+   glEnableVertexAttribArray(2);
+   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+      (void*)offsetof(Vertex, TexCoords));
+   glBindVertexArray(0);
 }

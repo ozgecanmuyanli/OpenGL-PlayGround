@@ -1,194 +1,179 @@
-#pragma once
-#include <string>
-#include <vector>
-#include <GLFW/glfw3.h>
+#ifndef MODEL_H
+#define MODEL_H
+
+#include <glad/glad.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include "stb_image.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
+#include "Mesh.h"
 #include "Shader.h"
+#include "Texture.h"
 
-struct Vertex
-{
-	glm::vec3 position;
-	glm::vec2 textCoord;
-	glm::vec3 normal;
-
-	Vertex() {}
-	Vertex(glm::vec3 position, glm::vec2 textCoord, glm::vec3 normal)
-	{
-		this->position = position;
-		this->textCoord = textCoord;
-		this->normal = normal;
-	}
-};
-
-struct
-{
-	GLuint id;
-	std::string type;
-};
-
-class ModelMesh
-{
-public:
-	std::vector<Vertex> vertices;
-	std::vector<unsigned int> indices;
-	ModelMesh() { }
-	ModelMesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
-	{
-		this->vertices = vertices;
-		this->indices = indices;
-
-		setupMesh();
-	}
-	void Draw(Shader shader)
-	{
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-		glBindVertexArray(0);
-	}
-
-private:
-	unsigned int VAO, VBO, EBO;
-	void setupMesh()
-	{
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
-		//glGenBuffers(1, &EBO);
-
-		glBindVertexArray(VAO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-
-		/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);*/
-
-		/* vertex positions */
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
-		/* vertex texture coords */
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, textCoord));
-		/* vertex normals */
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, normal));
-
-		glBindVertexArray(0);
-	}
-};
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <map>
+#include <vector>
 
 class Model
 {
 public:
-	glm::mat4 model;
-	bool isModelValid;
-	Model(std::string path)
-	{
-		model = glm::mat4(1.0);
-		this->isModelValid = this->loadOBJModel(path);
-	}
+   Model() {};
+   vector<Texture> textures_loaded;
+   vector<Mesh> meshes;
+   string directory;
+   bool gammaCorrection;
 
-	void Draw(Shader shader)
-	{
-		for (int i = 0; i < meshes.size(); i++)
-		{
-			meshes[i].Draw(shader);
+   Model(char* path)
+   {
+      loadModel(path);
+   }
+   void Draw(Shader& shader)
+   {
+      for (unsigned int i = 0; i < meshes.size(); i++)
+         meshes[i].Draw(shader);
+   }
 
-			//model = glm::rotate(model, (float)glm::radians(135.0f), glm::vec3(0.0, 1.0, 0.0));
-			//shader.setFloat("timeSin", (((float)glm::sin(glfwGetTime()) + 1.0f) / 2.0f) / 8);
-			//model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
-			shader.setMat4("model", model);
-		}
-	}
+private: 
+   void loadModel(string path)
+   {
+      Assimp::Importer import;
+      const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
+      if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+         !scene->mRootNode)
+      {
+         cout << "ERROR::ASSIMP::" << import.GetErrorString() << endl;
+         return;
+      }
+      directory = path.substr(0, path.find_last_of('/'));
+      processNode(scene->mRootNode, scene);
+   }
+   void processNode(aiNode* node, const aiScene* scene)
+   {
+      // process all the node’s meshes (if any)
+      for (unsigned int i = 0; i < node->mNumMeshes; i++)
+      {
+         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+         meshes.push_back(processMesh(mesh, scene));
+      }
+      // then do the same for each of its children
+      for (unsigned int i = 0; i < node->mNumChildren; i++)
+      {
+         processNode(node->mChildren[i], scene);
+      }
+   }
+   Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+   {
+      vector<Vertex> vertices;
+      vector<unsigned int> indices;
+      vector<Texture> textures;
+      for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+      {
+         Vertex vertex;
+         glm::vec3 vector;
+         vector.x = mesh->mVertices[i].x;
+         vector.y = mesh->mVertices[i].y;
+         vector.z = mesh->mVertices[i].z;
+         vertex.Position = vector;
 
-private:
-	std::vector<ModelMesh> meshes;
-	bool loadOBJModel(std::string path)
-	{
-		if (path.substr(path.size() - 4, 4) != ".obj")
-			return false;
+         if (mesh->HasNormals())
+         {
+            vector.x = mesh->mNormals[i].x;
+            vector.y = mesh->mNormals[i].y;
+            vector.z = mesh->mNormals[i].z;
+            vertex.Normal = vector;
+         }
 
-		std::ifstream file(path);
-		if (!file.is_open())
-			return false;
+         if (mesh->mTextureCoords[0])
+         {
+            glm::vec2 vec;
+            vec.x = mesh->mTextureCoords[0][i].x;
+            vec.y = mesh->mTextureCoords[0][i].y;
+            vertex.TexCoords = vec;
 
-		std::string line;
-		std::vector<glm::vec3> positions;
-		std::vector<glm::vec2> textCoords;
-		std::vector<glm::vec3> normals;
-		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
+            if (mesh->mTangents)
+            {
+               //tangent
+               vector.x = mesh->mTangents[i].x;
+               vector.y = mesh->mTangents[i].y;
+               vector.z = mesh->mTangents[i].z;
+               vertex.Tangent = vector;
+               //bitangent
+               vector.x = mesh->mBitangents[i].x;
+               vector.y = mesh->mBitangents[i].y;
+               vector.z = mesh->mBitangents[i].z;
+               vertex.Bitangent = vector;
+            }
 
-		unsigned int ind = 0;
-		while (std::getline(file, line))
-		{
-			std::string type = line.substr(0, 2);
-			/* Position of vertex*/
-			if (type == "v ")
-			{
-				std::istringstream v(line.substr(2));
-				double x, y, z;
-				v >> x >> y >> z;
-				positions.push_back(glm::vec3(x, y, z));
-			}
-			/* Texture coordinate of vertex */
-			else if (type == "vt")
-			{
-				std::istringstream vt(line.substr(3));
-				double x, y, z;
-				vt >> x >> y >> z;
-				textCoords.push_back(glm::vec2(x, y));
-			}
-			/* Normal of surface */
-			else if (type == "vn")
-			{
-				std::istringstream vn(line.substr(2));
-				double x, y, z;
-				vn >> x >> y >> z;
-				normals.push_back(glm::vec3(x, y, z));
-			}
-			/* Face of surface */
-			else if (type == "f ")
-			{
-				const char* chh = line.c_str();
-				int vi, vj, vk;
-				int vti, vtj, vtk;
-				int vni, vnj, vnk;
-				int format_1 = sscanf(chh, "f %i//%i  %i//%i %i//%i", &vi, &vni, &vj, &vnj, &vk, &vnk);
-				int format_2 = sscanf(chh, "f %i/%i/%i  %i/%i/%i %i/%i/%i", &vi, &vti, &vni, &vj, &vtj, &vnj, &vk, &vtk, &vnk);
-				//if (format_1)
-				//{
-				//	vertices.push_back(Vertex(positions[vi - 1], glm::vec2(1.0f, 1.0f), normals[vni - 1]));
-				//	vertices.push_back(Vertex(positions[vj - 1], glm::vec2(1.0f, 1.0f), normals[vnj - 1]));
-				//	vertices.push_back(Vertex(positions[vk - 1], glm::vec2(1.0f, 1.0f), normals[vnk - 1]));
-				//}
-				if (format_2)
-				{
-					vertices.push_back(Vertex(positions[vi - 1], textCoords[vti - 1], normals[vni - 1]));
-					vertices.push_back(Vertex(positions[vj - 1], textCoords[vtj - 1], normals[vnj - 1]));
-					vertices.push_back(Vertex(positions[vk - 1], textCoords[vtk - 1], normals[vnk - 1]));
-				}
-				else
-				{
-					std::cout << "Different format !" << std::endl;
-					return false;
-				}
-			}
-		}
-		file.close();
+         }
+         else
+         {
+            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+         }
+         vertices.push_back(vertex);
+      }
 
-		positions.clear();
-		textCoords.clear();
-		normals.clear();
+      for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+      {
+         aiFace face = mesh->mFaces[i];
+         for (unsigned int j = 0; j < face.mNumIndices; j++)
+            indices.push_back(face.mIndices[j]);
+      }
 
-		ModelMesh mesh = ModelMesh(vertices, indices);
-		meshes.push_back(mesh);
+      // process material
+      aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-		vertices.clear();
-		indices.clear();
+      vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+      textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
-		return true;
-	}
+      vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+      textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+
+      vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+      textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+
+      vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+      textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+      
+      return Mesh(vertices, indices, textures);
+   }
+
+   vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
+   {
+      vector<Texture> textures;
+      for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
+      {
+         aiString str;
+         mat->GetTexture(type, i, &str);
+         bool skip = false;
+         for (unsigned int j = 0; j < textures_loaded.size(); j++)
+         {
+            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+            {
+               textures.push_back(textures_loaded[j]);
+               skip = true;
+               break;
+            }
+         }
+         if (!skip)
+         {
+            Texture texture = Texture(str.C_Str(), directory);
+            texture.type = typeName;
+            textures.push_back(texture);
+            textures_loaded.push_back(texture);
+         }
+
+      }
+      return textures;
+   }
 };
 
-
+#endif // !MODEL_H

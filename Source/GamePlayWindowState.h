@@ -12,6 +12,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "Camera.h"
+#include <assimp/Importer.hpp>
 
 class GamePlayWindowState : public State
 {
@@ -31,12 +32,14 @@ private:
    Shader* mapShader;
    Shader* cubeShader;
    Shader* axisShader;
+   Shader* modelShader;
    Texture* mapTexture;
    Texture* groundTexture;
-   Texture* woodTexture;
    Texture* wallTexture;
    Texture* normalMap;
-   Model* cubeModel;
+   Model cubeModel;
+   Model sponzaModel;
+   Model backpackModel;
    bool* keys;
 
    glm::mat4 modelMatrix, projectionMatrix, viewMatrix;

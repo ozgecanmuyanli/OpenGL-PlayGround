@@ -10,6 +10,7 @@ GamePlayWindowState::GamePlayWindowState()
    mapShader = new Shader("../../Shaders/mapShader.vs", "../../Shaders/mapShader.fs");
    cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
    axisShader = new Shader("../../Shaders/axisShader.vs", "../../Shaders/axisShader.fs");
+   modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
 
    modelMatrix = glm::mat4(1.0f);
    viewMatrix = glm::mat4(1.0f);
@@ -20,16 +21,16 @@ GamePlayWindowState::GamePlayWindowState()
 
 void GamePlayWindowState::Initialise()
 {
-   cubeModel = new Model("../../Models/cube1x1.obj");
+   cubeModel = Model("../../Models/cube1x1.obj");
+   sponzaModel = Model("../../Models/sponza/sponza.obj");
+   backpackModel = Model("../../Models/backpack/backpack.obj");
 
    mapTexture = new Texture();
    mapTexture->LoadTextureCPU("../../Textures/map.bmp");
    mapTexture->SetMapTexture();
 
    wallTexture = new Texture();
-   wallTexture->LoadTextureGPU("../../Textures/wall.png");
-   woodTexture = new Texture();
-   woodTexture->LoadTextureGPU("../../Textures/brickwall.jpg");
+   wallTexture->LoadTextureGPU("../../Textures/brickwall.jpg");
    groundTexture = new Texture();
    groundTexture->LoadTextureGPU("../../Textures/sponza_floor_a_diff.png");
 
@@ -39,6 +40,7 @@ void GamePlayWindowState::Initialise()
 
 StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 {
+   glClearColor(SKY_CLEAR_RED, SKY_CLEAR_GREEN, SKY_CLEAR_BLUE, 1.0f);
    // PROJECTION
    projectionMatrix = glm::perspective(glm::radians(FOV),
       (GLfloat)mainWindow.getBufferWidth() / (GLfloat)mainWindow.getBufferHeight(), NEAR, FAR);
@@ -56,10 +58,20 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 
 void GamePlayWindowState::RenderState()
 {
-   DrawMap();
-   DrawAxis();
-   DrawEntity(woodTexture, mapTexture->waterEntityTranslateValues);
-   DrawEntity(woodTexture, mapTexture->wallEntityTranslateValues);
+   //DrawMap();
+   //DrawAxis();
+   DrawEntity(wallTexture, mapTexture->waterEntityTranslateValues);
+   DrawEntity(wallTexture, mapTexture->wallEntityTranslateValues);
+
+   modelShader->use();
+   modelShader->setMat4("projection", projectionMatrix);
+   modelShader->setMat4("view", viewMatrix);
+   modelMatrix = glm::mat4(1.0f);
+   modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
+   modelShader->setMat4("model", modelMatrix);
+   modelShader->setVec3("viewPos", this->camera->getCameraPosition());
+   sponzaModel.Draw(*modelShader);
+
 }
 
 void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::vec2> entity)
@@ -80,7 +92,7 @@ void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::ve
                                                                   entity[i].y));
       cubeModelMatrix = glm::scale(cubeModelMatrix, glm::vec3(1.0f / mapTexture->GetTextureWidth()));
       cubeShader->setMat4("model", cubeModelMatrix);
-      cubeModel->Draw(*cubeShader);
+      //cubeModel.Draw(*cubeShader);
    }
 
    cubeShader->setVec3("lightPos", 0.271438479, 0.199558944, 0.912041306);

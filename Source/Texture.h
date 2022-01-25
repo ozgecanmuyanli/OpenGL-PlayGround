@@ -9,11 +9,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include<string>
 
 class Texture
 {
 public:
    Texture();
+   Texture(const char* path, const std::string &directory);
+
+   std::string path, type;
+   unsigned int textureID;
 
    void LoadTextureGPU(char *texture_path);
    void LoadTextureCPU(char* texture_path);
@@ -33,7 +38,7 @@ public:
 
 private:
    unsigned char* texture_data;
-   unsigned int texture;
+   
    unsigned char* pixelOffset;
    int texture_width, texture_height, nrChannels;
    
