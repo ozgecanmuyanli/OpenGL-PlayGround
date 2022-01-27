@@ -59,7 +59,7 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
 void GamePlayWindowState::RenderState()
 {
    //DrawMap();
-   //DrawAxis();
+   DrawAxis();
    DrawEntity(wallTexture, mapTexture->waterEntityTranslateValues);
    DrawEntity(wallTexture, mapTexture->wallEntityTranslateValues);
 
@@ -67,11 +67,12 @@ void GamePlayWindowState::RenderState()
    modelShader->setMat4("projection", projectionMatrix);
    modelShader->setMat4("view", viewMatrix);
    modelMatrix = glm::mat4(1.0f);
-   modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
+  // modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
    modelShader->setMat4("model", modelMatrix);
    modelShader->setVec3("viewPos", this->camera->getCameraPosition());
-   sponzaModel.Draw(*modelShader);
-
+   modelShader->setVec3("lightPos", glm::vec3(0.0f, 0.5f, 0.5f));
+   //sponzaModel.Draw(*modelShader);
+   backpackModel.Draw(*modelShader);
 }
 
 void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::vec2> entity)

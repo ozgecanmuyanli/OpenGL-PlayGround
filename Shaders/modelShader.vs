@@ -2,21 +2,39 @@
 layout (location=0) in vec3 aPos;
 layout (location=1) in vec3 aVertexNormal;
 layout (location=2) in vec2 aTextureCoord;
+layout (location = 3) in vec3 aTangent;
+layout (location = 4) in vec3 aBitangent;
 
-out vec3 oPos;
 out vec2 oTextureCoord;
 out vec3 oVertexNormal;
 out vec3 oPosInWorldSpace;
+out vec3 TangentLightPos;
+out vec3 TangentViewPos;
+out vec3 TangentWorldPos;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform vec3 viewPos;
+uniform vec3 lightPos;
 
 void main()
 {
-	oPos = aPos;
 	oVertexNormal = aVertexNormal;
 	oTextureCoord = aTextureCoord;
-	oPosInWorldSpace = (model * vec4(oPos, 1.0f)).xyz;
-	gl_Position = projection * view * model * vec4(oPos, 1.0f);	
+	oTextureCoord.y = 1.0 - oTextureCoord.y; // for backpack model textures
+	oPosInWorldSpace = (model * vec4(aPos, 1.0f)).xyz;
+
+	mat3 normalMatrix = transpose(inverse(mat3(model)));
+	vec3 T = normalize(normalMatrix * aTangent);
+	vec3 N = normalize(normalMatrix * aVertexNormal);
+	T = normalize(T - dot(T, N) * N);
+	vec3 B = cross(N, T);
+
+	mat3 TBN = transpose(mat3(T, B, N));
+	TangentLightPos = TBN * lightPos;
+	TangentViewPos = TBN * viewPos;
+	TangentWorldPos = TBN * oPosInWorldSpace;
+
+	gl_Position = projection * view * model * vec4(aPos, 1.0f);	
 }

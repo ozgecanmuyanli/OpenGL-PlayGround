@@ -27,9 +27,7 @@ void Camera::drawCameraGUI()
 {
    if (ImGui::Begin("Camera Properties"))
    {
-      ImGui::DragFloat("accAcc", &accAcc, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
-      ImGui::DragFloat("maxAcc", &maxAcc, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
-      ImGui::DragFloat("maxSpeed", &maxSpeed, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Camera Speed", &maxSpeed, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
       ImGui::Text("%.3f", position.y);
    }
    ImGui::End();

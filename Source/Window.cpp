@@ -36,7 +36,7 @@ int Window::Initialise()
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 
-   mainWindow = glfwCreateWindow(width, height, "Name of the game", NULL, NULL);
+   mainWindow = glfwCreateWindow(width, height, "OPENGL PLAYGROUND", NULL, NULL);
    if (!mainWindow)
    {
       glfwTerminate();
