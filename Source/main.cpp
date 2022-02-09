@@ -120,7 +120,6 @@ void MainLoop()
       currentState->RenderState();
 
       //cWindow->DrawGUI();
-      camera->drawCameraGUI();
       ImGui::Render();
       ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

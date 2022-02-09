@@ -11,12 +11,14 @@ out vec3 oPosInWorldSpace;
 out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentWorldPos;
+out vec4 FragPosLightSpace;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec3 viewPos;
 uniform vec3 lightPos;
+uniform mat4 lightSpaceMatrix;
 
 void main()
 {
@@ -35,6 +37,8 @@ void main()
 	TangentLightPos = TBN * lightPos;
 	TangentViewPos = TBN * viewPos;
 	TangentWorldPos = TBN * oPosInWorldSpace;
+
+	FragPosLightSpace = lightSpaceMatrix * vec4(oPosInWorldSpace, 1.0);
 
 	gl_Position = projection * view * model * vec4(aPos, 1.0f);	
 }

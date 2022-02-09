@@ -111,7 +111,8 @@ public:
    // ------------------------------------------------------------------------
    void setInt(const std::string& name, int value) const
    {
-      glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+      GLint location = glGetUniformLocation(ID, name.c_str());
+      glUniform1i(location,value);
    }
    // ------------------------------------------------------------------------
    void setFloat(const std::string& name, float value) const

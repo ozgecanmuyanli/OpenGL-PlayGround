@@ -23,16 +23,6 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
    update();
 }
 
-void Camera::drawCameraGUI()
-{
-   if (ImGui::Begin("Camera Properties"))
-   {
-      ImGui::DragFloat("Camera Speed", &maxSpeed, 0.1f, -FLT_MAX, +FLT_MAX, "%.3f");
-      ImGui::Text("%.3f", position.y);
-   }
-   ImGui::End();
-}
-
 void Camera::keyControl(bool* keys, GLfloat deltaTime)
 {
    static float a = 0.0f; 

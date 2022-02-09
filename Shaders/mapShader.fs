@@ -36,5 +36,5 @@ vec3 AddLight()
 
 void main()
 {
-	FragColor = vec4(AddLight(), 1.0f); 
+	FragColor = vec4(texture(mapTexture,oTextureCoord).rgb, 1.0f); 
 }

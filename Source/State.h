@@ -23,13 +23,12 @@
 #define GREEN_G  (206.0f / 255.0f)
 #define GREEN_B  (130.0f / 255.0f)
 
-#define SKY_CLEAR_RED   (111.0F / 255.0F)
-#define SKY_CLEAR_GREEN (190.0F / 255.0F)
-#define SKY_CLEAR_BLUE  (255.0F / 255.0F)
-
 #define FOV      (45.0F)
-#define NEAR     (0.1F)
+#define NEAR     (0.01F)
 #define FAR      (100.0F)
+
+#define SCR_WIDTH   (1600)
+#define SCR_HEIGHT  (900)
 
 class State
 {
