@@ -12,6 +12,7 @@ out vec3 TangentLightPos;
 out vec3 TangentViewPos;
 out vec3 TangentWorldPos;
 out vec4 FragPosLightSpace;
+out mat3 oTBN;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -34,6 +35,7 @@ void main()
 	vec3 B = cross(N, T);
 
 	mat3 TBN = transpose(mat3(T, B, N));
+	oTBN = TBN;
 	TangentLightPos = TBN * lightPos;
 	TangentViewPos = TBN * viewPos;
 	TangentWorldPos = TBN * oPosInWorldSpace;

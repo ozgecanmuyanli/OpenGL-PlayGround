@@ -8,6 +8,7 @@ in vec3 TangentLightPos;
 in vec3 TangentViewPos;
 in vec3 TangentWorldPos;
 in vec4 FragPosLightSpace;
+in mat3 oTBN;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
@@ -44,29 +45,32 @@ float CalculateShadow(vec4 fragPosLightSpace)
 
 vec3 AddLight(vec4 fragPosLightSpace) // SHADOW MAPPING - directional light
 {
-	vec3 normal = texture(texture_normal1, oTextureCoord).rgb;
+	vec3 normal = oTBN * oVertexNormal ;
 	normal = normal * 2.0 - 1.0;
 
 	vec3 pLightDir = normalize(TangentWorldPos - TangentLightPos);
 	vec3 reversedlightDir = -normalize(pLightDir);
 
 	float diffuse = max(dot(normal, reversedlightDir), 0.0);
-	vec3 diffuseFactor = diffuse * texture(texture_diffuse1,oTextureCoord).rgb;
+	vec3 diffuseFactor = vec3(diffuse) ;//* texture(texture_diffuse1,oTextureCoord).rgb;
 	
 	vec3 reflectDir = reflect(normalize(pLightDir), normal);
 	vec3 viewDir = normalize(TangentViewPos - TangentWorldPos);
 	float specular = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-	vec3 specularFactor = specular * texture(texture_specular1, oTextureCoord).rrr;
+	vec3 specularFactor = vec3(specular) ;//* texture(texture_specular1, oTextureCoord).rrr;
 
 	float ambientStrength = 0.25;
-	vec3 ambientFactor = ambientStrength * texture(texture_diffuse1,oTextureCoord).rgb;
+	vec3 ambientFactor = vec3(ambientStrength) ;//* texture(texture_diffuse1,oTextureCoord).rgb;
 
 	float shadow = CalculateShadow(fragPosLightSpace);
 	return (diffuseFactor + specularFactor) * (ambientFactor + (1.0 - shadow));
 	//return vec3(1 - shadow);
 }
 
+
+
 void main()
 {
-	FragColor = vec4(AddLight(FragPosLightSpace), 1.0f);
+	//FragColor = vec4(AddLight(FragPosLightSpace), 1.0f);
+	FragColor = vec4(vec3(0.1f, 0.1f,1.0f) * oVertexNormal, 1.0f);
 }

@@ -155,5 +155,3 @@ void Texture::SetMapTexture()
 	}
 	stbi_image_free(texture_data);
 }
-
-

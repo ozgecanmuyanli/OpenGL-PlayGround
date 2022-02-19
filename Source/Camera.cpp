@@ -158,11 +158,11 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 
    if (keys[GLFW_KEY_Q])
    {
-      position += up * 0.25f * deltaTime;
+      position += up * 1.25f * deltaTime;
    }
    if (keys[GLFW_KEY_E])
    {
-      position -= up * 0.25f * deltaTime;
+      position -= up * 1.25f * deltaTime;
    }
 }
 

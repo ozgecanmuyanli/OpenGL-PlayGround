@@ -26,16 +26,16 @@ public:
    void DrawEntity(Texture* texture, std::vector<glm::vec2> entity);
    void setStateCamera(Camera* pCamera);
    void DrawAxis();
-   void DrawGivenModel(Model givenModel);
 
    void CreateDepthMapForShadow();
    void DebugDepthMap();
    void SetView(glm::mat4 view);
    void SetProjection(glm::mat4 projection);
-   void SetCubeConfiguration();
-   void SetModelConfiguration();
    void drawGUI();
    void DrawOrthoOfLight();
+   void DrawShadowMapScene();
+   unsigned int LoadCubemap(std::vector<std::string> faces);
+   void DrawCubemap();
 
 private:
    Camera* camera;
@@ -46,6 +46,7 @@ private:
    Shader* simpleDepthShader;
    Shader* debugDepthMap;
    Shader* debugOrthoOfLight;
+   Shader* cubeMapShader;
    Texture* mapTexture;
    Texture* groundTexture;
    Texture* wallTexture;
@@ -54,6 +55,7 @@ private:
    Model sponzaModel;
    Model backpackModel;
    Model orthoCubeModel;
+   Model f16Model;
    bool* keys;
 
    glm::mat4 modelMatrix, projectionMatrix, viewMatrix;
@@ -67,4 +69,6 @@ private:
    glm::vec3 lightDir;
    float near_plane, far_plane;
    float ortho_left, ortho_right, ortho_bottom, ortho_top;
+
+   unsigned int cubemapTexture;
 };
