@@ -130,6 +130,7 @@ void GamePlayWindowState::DrawCubemap()
 
 void GamePlayWindowState::RenderState()
 {
+   glEnable(GL_MULTISAMPLE);
    DrawCubemap();
 
    modelMatrix = glm::mat4(1.0f);
