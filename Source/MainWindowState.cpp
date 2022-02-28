@@ -16,7 +16,7 @@ void MainWindowState::Initialise()
 	clickEffectTexture->LoadTextureGPU("../../Textures/clickEffect.png");
 
 	gameButtonTexture = new Texture();
-	gameButtonTexture->LoadTextureGPU("../../Textures/creditsButtonDefault.png");
+	gameButtonTexture->LoadTextureGPU("../../Textures/nameButton.png");
 	buttonGameName->SetButtonTextures(gameButtonTexture, gameButtonTexture);
 
 	playButtonTexture = new Texture();
