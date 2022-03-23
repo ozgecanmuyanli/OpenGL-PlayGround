@@ -29,20 +29,23 @@ Triangle is drawn in Normalized Device Coordinates.
 ![triangle](Outputs/triangle.PNG)
 
 - **Textures and Basic Lighting**
-Indexed drawing is implemented to draw a quad with a texture on it.
+Indexed drawing is implemented to draw a quad with a texture on it. Basic lighting 
+calculations are applied according to a given point light position in fragment shader.
 
 ![texture](Outputs/texture.PNG)
 
-- **3D transformations**
-3D cube objects are drawn and they are transformated using random model matrices.
-
-![3D](Outputs/3D.PNG)
-
 - **Random Squares**
-Colored squares are drawn using indexed drawing and random model matrices with a point light.
-Color codes are also random uniform values.
+Colored squares are drawn using indexed drawing with a point light. The model matrices of 
+squares are generated from random scale, rotate and translate values. Color codes are also 
+random uniform values.
 
 ![random_squares_with_moving_light](Outputs/random_squares_with_moving_light.PNG)
+
+- **3D transformations**
+3D cube objects are drawn and they are translated using random model matrices. The scene 
+is rendered from the camera’s point of view and perspective projection is impelemented.
+
+![3D](Outputs/3D.PNG)
 
 - **3D Terrain using height map texture**
   Height map represents the elevation values of the terrain. The terrain is drawn on grids and it 
@@ -58,15 +61,16 @@ hegiht map texture              | terrain
 ![terrain_and_clouds_from_noise](Outputs/terrain_and_clouds_from_noise.PNG)
 
 - **Framebuffer**
-  The scene is drawn from a different perspective on the framebuffer and shown in the upper left corner.
+  The scene is drawn from a different perspective on the framebuffer by changing the view matrix. 
+  It is shown in the upper left corner.
 
 ![framebuffer](Outputs/framebuffer.PNG)
 
-- **3D meadow from a single grass texture**
+- **3D grassland from a single grass texture**
 Two grass textures are drawn on the same center, at 90 degrees angle to each other on the z-axis. This 
-structure is scratched enough to cover the whole floor. Therefore, a meadow image is obtained.
+structure is scratched enough to cover the whole floor. Therefore, a grassland image is obtained.
 
-single grass texture         | 3D meadow
+single grass texture         | 3D grassland
 :---------------------------:|:-------------------------------:
 ![grass](Textures/grass.png) | ![grass](Outputs/grass.PNG)
 
@@ -76,7 +80,8 @@ Transparency is implemented according to 0.5 alpha value within window object.
 ![blending](Outputs/blending.PNG)
 
 - **Interface**
-  Interfaces resembling game screens are drawn. No external GUI application is used.
+  Interfaces resembling game screens are drawn using orthographic projection. No external GUI application
+ is used.
 
 Names          | Screen Images                                
 :-------------:|:--------------------------------------------------:
@@ -94,15 +99,21 @@ Button Click                                      | Button Click
 ![click_effect_4](Outputs/click_effect_4.PNG)     | ![click_effect_3](Outputs/click_effect_3.PNG) 
 
 - **Generate Random Map**
-A map is generated using bmp file. Each color of the pixel represents an entity like a wall or a cube. 
-A random map can be generated using any colored bmp.
+
+A 3-channel map texture(bmp) is created using GIMP. Each unique pixel color corresponds to an entity 
+like a wall or a cube. The map texture's pixel color and coordinates are read and translate values are 
+calculated according to pixel coords. Cube models are translated to these translate values.
+With this method, a random map can be generated using any colored bmp. 
+
+Map is drawn to a quad. This quad vertices are set in vertex shader, not in CPU.
 
 Colored bmp file            | Map 
 :--------------------------:|:-------------------------------------------------------:
 ![map](Outputs/map_bmp.PNG) | ![generate_random_map](Outputs/generate_random_map.PNG)
 
 - **Directional Light**
-Directional light calculations are impelemented in fragment shader for the whole scene.
+Directional light calculations are impelemented in fragment shader for the whole scene. 
+Ambient, specular and diffuse lighting components are combined.
 
 ![directional_light](Outputs/directional_light.PNG)
 
@@ -127,8 +138,8 @@ for further applications.
 
 - **Normal Mapping**
 Tangent space is calculated for the model and it is used as the new coordinate system. A brick surface is 
-quite a rough surface and obviously not completely flat. Therefore, the surface has not only one directional 
-normal vector, it has different directional normal vectors per fragment. 
+quite rough surface and obviously not completely flat. Therefore, the surface has not only one directional 
+normal vectors, it has a different directional normal vector per fragment. 
 
 ![normal_mapping_3](Outputs/normal_mapping_3.PNG)
 
@@ -152,8 +163,9 @@ A combination of multiple textures mapped into one to create a cube map.
 - **Anti Aliasing**
 Anti Aliasing is applied using MSAA. The difference can be seen in the plane model.
 
-Before
-![before_anti_aliasing](Outputs/before_anti_aliasing.PNG) 
+Before                                                    |
+:--------------------------------------------------------:|
+![before_anti_aliasing](Outputs/before_anti_aliasing.PNG) |
+**After**                                                 |
+![after_anti_aliasing](Outputs/after_anti_aliasing.PNG)   |
 
-After
-![after_anti_aliasing](Outputs/after_anti_aliasing.PNG)
