@@ -120,7 +120,7 @@ Map is drawn to a quad. This quad vertices are set in vertex shader, not in CPU.
 
 Colored bmp file                           | Map 
 :-----------------------------------------:|:-------------------------------------------------------:
-![map](Outputs/map_bmp.PNG)                | ![generate_random_map](Outputs/generate_random_map.PNG)
+![map](Outputs/map_bmp.png)                | ![generate_random_map](Outputs/generate_random_map.PNG)
 
 - **Directional Light**
   
