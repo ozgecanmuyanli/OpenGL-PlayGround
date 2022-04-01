@@ -14,6 +14,10 @@
 #include "Camera.h"
 #include <assimp/Importer.hpp>
 
+#define FOG_EQUATION_LINEAR 0
+#define FOG_EQUATION_EXP 1
+#define FOG_EQUATION_EXP2 2
+
 class GamePlayWindowState : public State
 {
 public:
@@ -47,6 +51,7 @@ private:
    Shader* debugDepthMap;
    Shader* debugOrthoOfLight;
    Shader* cubeMapShader;
+   Shader* fogShader;
    Texture* mapTexture;
    Texture* groundTexture;
    Texture* wallTexture;

@@ -27,6 +27,8 @@ GamePlayWindowState::GamePlayWindowState()
    debugOrthoOfLight = new Shader("../../Shaders/debugOrthoOfLight.vs", "../../Shaders/debugOrthoOfLight.fs");
    cubeMapShader = new Shader("../../Shaders/cubemapShader.vs", "../../Shaders/cubemapShader.fs");
 
+   fogShader = new Shader("../../Shaders/fogShader.vs", "../../Shaders/fogShader.fs");
+
    modelMatrix = glm::mat4(1.0f);
    viewMatrix = glm::mat4(1.0f);
    cubeModelMatrix = glm::mat4(1.0f); //ground
@@ -38,7 +40,7 @@ GamePlayWindowState::GamePlayWindowState()
 void GamePlayWindowState::Initialise()
 {
    cubeModel = Model("../../Models/cube/cube1x1.obj");
-   //sponzaModel = Model("../../Models/sponza/sponza.obj");
+   sponzaModel = Model("../../Models/sponza/sponza.obj");
    //backpackModel = Model("../../Models/backpack/backpack.obj");
    f16Model = Model("../../Models/f-16.obj");
 
@@ -77,6 +79,14 @@ void GamePlayWindowState::Initialise()
    CreateDepthMapForShadow();
 }
 
+namespace FogParameters {
+   float fDensity = 1.14f;
+   float fStart = 0.3f;
+   float fEnd = 4.0f;
+   glm::vec4 vFogColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
+   int iFogEquation = FOG_EQUATION_EXP;
+};
+
 void GamePlayWindowState::SetView(glm::mat4 view)
 {
    viewMatrix = view;
@@ -108,6 +118,7 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
       modelShader = new Shader("../../Shaders/modelShader.vs", "../../Shaders/modelShader.fs");
       cubeMapShader = new Shader("../../Shaders/cubemapShader.vs", "../../Shaders/cubemapShader.fs");
       cubeShader = new Shader("../../Shaders/cubeShader.vs", "../../Shaders/cubeShader.fs");
+      fogShader = new Shader("../../Shaders/fogShader.vs", "../../Shaders/fogShader.fs");
    }
 
    return stateType;
@@ -131,19 +142,44 @@ void GamePlayWindowState::DrawCubemap()
 void GamePlayWindowState::RenderState()
 {
    glEnable(GL_MULTISAMPLE);
-   DrawCubemap();
 
+   wallTexture->ActivateTexture(GL_TEXTURE0);
+   wallTexture->BindTexture();
    modelMatrix = glm::mat4(1.0f);
-   cubeShader->use();
-   cubeShader->setMat4("view", sceneViewMatrix);
-   cubeShader->setMat4("projection", sceneProjectionMatrix);
-   modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 4.0f, -25.0f));
-   modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-   cubeShader->setMat4("model", modelMatrix);
-   cubeShader->setVec3("viewPos", this->camera->getCameraPosition());
-   cubeShader->setVec3("lightPos", glm::vec3(-7.0f, 7.0f, -7.0f));
-   f16Model.Draw(*cubeShader);
-   modelMatrix = glm::mat4(1.0f);
+   modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f));
+   modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
+   fogShader->use();
+   fogShader->setMat4("view", sceneViewMatrix);
+   fogShader->setMat4("projection", sceneProjectionMatrix);
+   fogShader->setMat4("model", modelMatrix);
+   fogShader->setInt("wallTexture", 0);
+   fogShader->setInt("fogParams.equation", FogParameters::iFogEquation);
+   fogShader->setVec3("fogParams.color", FogParameters::vFogColor);
+   if (FogParameters::iFogEquation == FOG_EQUATION_LINEAR)
+   {
+      fogShader->setFloat("fogParams.linearStart", FogParameters::fStart);
+      fogShader->setFloat("fogParams.linearEnd", FogParameters::fEnd);
+   }
+   else
+   {
+      fogShader->setFloat("fogParams.density", FogParameters::fDensity);
+   }
+   sponzaModel.Draw(*fogShader);
+
+
+   //DrawCubemap();
+
+   //modelMatrix = glm::mat4(1.0f);
+   //cubeShader->use();
+   //cubeShader->setMat4("view", sceneViewMatrix);
+   //cubeShader->setMat4("projection", sceneProjectionMatrix);
+   //modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 4.0f, -25.0f));
+   //modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+   //cubeShader->setMat4("model", modelMatrix);
+   //cubeShader->setVec3("viewPos", this->camera->getCameraPosition());
+   //cubeShader->setVec3("lightPos", glm::vec3(-7.0f, 7.0f, -7.0f));
+   //f16Model.Draw(*cubeShader);
+   //modelMatrix = glm::mat4(1.0f);
 
 
    //DrawShadowMapScene();
