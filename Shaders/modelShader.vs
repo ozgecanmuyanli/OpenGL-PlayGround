@@ -13,6 +13,7 @@ out vec3 TangentViewPos;
 out vec3 TangentWorldPos;
 out vec4 FragPosLightSpace;
 out mat3 oTBN;
+out vec4 oEyeSpacePos;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -23,9 +24,11 @@ uniform mat4 lightSpaceMatrix;
 
 void main()
 {
+	mat4 mv = view * model;
+	oEyeSpacePos = mv * vec4(aPos, 1.0f);
 	oVertexNormal = aVertexNormal;
 	oTextureCoord = aTextureCoord;
-	oTextureCoord.y = 1.0 - oTextureCoord.y; // for backpack model textures
+	//oTextureCoord.y = 1.0 - oTextureCoord.y; // for backpack model textures
 	oPosInWorldSpace = (model * vec4(aPos, 1.0f)).xyz;
 
 	mat3 normalMatrix = transpose(inverse(mat3(model)));

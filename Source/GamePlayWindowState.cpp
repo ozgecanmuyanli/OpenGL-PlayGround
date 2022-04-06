@@ -5,6 +5,14 @@ void GamePlayWindowState::setStateCamera(Camera* pCamera)
    this->camera = pCamera;
 }
 
+namespace FogParameters {
+   float fDensity = 1.5f;
+   float fStart = 0.3f;
+   float fEnd = 4.0f;
+   glm::vec4 vFogColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
+   int iFogEquation = FOG_EQUATION_EXP;
+};
+
 void GamePlayWindowState::drawGUI()
 {
    if (ImGui::Begin("Light Properties"))
@@ -12,6 +20,21 @@ void GamePlayWindowState::drawGUI()
       ImGui::DragFloat("Light Direction x", &lightDir.x, 0.5f, -FLT_MAX, +FLT_MAX, "%.3f");
       ImGui::DragFloat("Light Direction y", &lightDir.y, 0.5f, -FLT_MAX, +FLT_MAX, "%.3f");
       ImGui::DragFloat("Light Direction z", &lightDir.z, 0.5f, -FLT_MAX, +FLT_MAX, "%.3f");
+   }
+   ImGui::End();
+   if (ImGui::Begin("Ortho Properties"))
+   {
+      ImGui::DragFloat("Ortho Direction bottom", &ortho_bottom, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Ortho Direction top", &ortho_top, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Ortho Direction left", &ortho_left, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Ortho Direction right", &ortho_right, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Ortho Direction near", &near_plane, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+      ImGui::DragFloat("Ortho Direction far", &far_plane, 0.01f, -FLT_MAX, +FLT_MAX, "%.3f");
+   }
+   ImGui::End();
+   if (ImGui::Begin("Fog Density"))
+   {
+      ImGui::DragFloat("density", &FogParameters::fDensity, 0.05f, -FLT_MAX, +FLT_MAX, "%.3f");
    }
    ImGui::End();
 }
@@ -33,6 +56,14 @@ GamePlayWindowState::GamePlayWindowState()
    viewMatrix = glm::mat4(1.0f);
    cubeModelMatrix = glm::mat4(1.0f); //ground
    lightDir = glm::vec3(10.0f);
+
+   //SHADOW MAP
+   near_plane = 0.001f;
+   far_plane = 2.0f;
+   ortho_left = -0.5f;
+   ortho_right = 0.5f;
+   ortho_bottom = -0.5f;
+   ortho_top = 0.5f;
 
    stateType = GAME_PLAY_WINDOW;
 }
@@ -68,24 +99,10 @@ void GamePlayWindowState::Initialise()
    };
    cubemapTexture = LoadCubemap(faces);
 
-   //SHADOW MAP
-   near_plane = 0.001f;
-   far_plane = 1.0f;
-   ortho_left = -0.5f;
-   ortho_right = 0.5f;
-   ortho_bottom = -0.5f;
-   ortho_top = 0.5f;
+
 
    CreateDepthMapForShadow();
 }
-
-namespace FogParameters {
-   float fDensity = 1.14f;
-   float fStart = 0.3f;
-   float fEnd = 4.0f;
-   glm::vec4 vFogColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
-   int iFogEquation = FOG_EQUATION_EXP;
-};
 
 void GamePlayWindowState::SetView(glm::mat4 view)
 {
@@ -124,6 +141,13 @@ StateType GamePlayWindowState::UpdateState(Window mainWindow, GLfloat deltaTime)
    return stateType;
 }
 
+void GamePlayWindowState::RenderState()
+{
+   glEnable(GL_MULTISAMPLE);
+   DrawFog(modelShader);
+   DrawShadowMapScene();
+}
+
 void GamePlayWindowState::DrawCubemap()
 {
    glDepthMask(GL_FALSE);
@@ -139,50 +163,27 @@ void GamePlayWindowState::DrawCubemap()
    glDepthMask(GL_TRUE);
 }
 
-void GamePlayWindowState::RenderState()
+void GamePlayWindowState::DrawFog(Shader* shaderProgram)
 {
-   glEnable(GL_MULTISAMPLE);
-
-   wallTexture->ActivateTexture(GL_TEXTURE0);
-   wallTexture->BindTexture();
-   modelMatrix = glm::mat4(1.0f);
-   modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f));
-   modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
-   fogShader->use();
-   fogShader->setMat4("view", sceneViewMatrix);
-   fogShader->setMat4("projection", sceneProjectionMatrix);
-   fogShader->setMat4("model", modelMatrix);
-   fogShader->setInt("wallTexture", 0);
-   fogShader->setInt("fogParams.equation", FogParameters::iFogEquation);
-   fogShader->setVec3("fogParams.color", FogParameters::vFogColor);
+   //modelMatrix = glm::mat4(1.0f);
+   //modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f));
+   //modelMatrix = glm::scale(modelMatrix, glm::vec3(0.002f));
+   shaderProgram->use();
+   //shaderProgram->setMat4("view", sceneViewMatrix);
+   //shaderProgram->setMat4("projection", sceneProjectionMatrix);
+   //shaderProgram->setMat4("model", modelMatrix);
+   shaderProgram->setInt("fogParams.equation", FogParameters::iFogEquation);
+   shaderProgram->setVec3("fogParams.color", FogParameters::vFogColor);
    if (FogParameters::iFogEquation == FOG_EQUATION_LINEAR)
    {
-      fogShader->setFloat("fogParams.linearStart", FogParameters::fStart);
-      fogShader->setFloat("fogParams.linearEnd", FogParameters::fEnd);
+      shaderProgram->setFloat("fogParams.linearStart", FogParameters::fStart);
+      shaderProgram->setFloat("fogParams.linearEnd", FogParameters::fEnd);
    }
    else
    {
-      fogShader->setFloat("fogParams.density", FogParameters::fDensity);
+      shaderProgram->setFloat("fogParams.density", FogParameters::fDensity);
    }
-   sponzaModel.Draw(*fogShader);
-
-
-   //DrawCubemap();
-
-   //modelMatrix = glm::mat4(1.0f);
-   //cubeShader->use();
-   //cubeShader->setMat4("view", sceneViewMatrix);
-   //cubeShader->setMat4("projection", sceneProjectionMatrix);
-   //modelMatrix = glm::translate(modelMatrix, glm::vec3(4.0f, 4.0f, -25.0f));
-   //modelMatrix = glm::rotate(modelMatrix, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-   //cubeShader->setMat4("model", modelMatrix);
-   //cubeShader->setVec3("viewPos", this->camera->getCameraPosition());
-   //cubeShader->setVec3("lightPos", glm::vec3(-7.0f, 7.0f, -7.0f));
-   //f16Model.Draw(*cubeShader);
-   //modelMatrix = glm::mat4(1.0f);
-
-
-   //DrawShadowMapScene();
+   //sponzaModel.Draw(*shaderProgram);
 }
 
 void GamePlayWindowState::DrawEntity(Texture* entityTexture, std::vector<glm::vec2> entity)
@@ -269,8 +270,8 @@ void GamePlayWindowState::CreateDepthMapForShadow()
    glBindTexture(GL_TEXTURE_2D, depthMap);
    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH,
       SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
@@ -344,15 +345,15 @@ void GamePlayWindowState::DrawShadowMapScene()
 
    glm::mat4 backpackModelMatrix = glm::mat4(1.0f);
    backpackModelMatrix = glm::translate(backpackModelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); //backpack
-   backpackModelMatrix = glm::scale(backpackModelMatrix, glm::vec3(0.05f)); //backpack
-   //backpackModelMatrix = glm::scale(backpackModelMatrix, glm::vec3(0.0002f)); //sponza
+   //backpackModelMatrix = glm::scale(backpackModelMatrix, glm::vec3(0.05f)); //backpack
+   backpackModelMatrix = glm::scale(backpackModelMatrix, glm::vec3(0.0002f)); //sponza
    simpleDepthShader->setMat4("model", backpackModelMatrix);
 
    // 1. render to DepthMap texture(FBO)
    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
    glClear(GL_DEPTH_BUFFER_BIT);
-   backpackModel.Draw(*simpleDepthShader);
+   sponzaModel.Draw(*simpleDepthShader);
 
    modelMatrix = glm::mat4(1.0f);
    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -0.2f, -0.1f));
@@ -377,12 +378,12 @@ void GamePlayWindowState::DrawShadowMapScene()
    modelShader->setVec3("viewPos", this->camera->getCameraPosition());
    modelShader->setVec3("lightPos", lightDir);
    modelShader->setMat4("lightSpaceMatrix", lightSpaceMatrix);
-   backpackModel.Draw(*modelShader);
+   sponzaModel.Draw(*modelShader);
    modelShader->setMat4("model", modelMatrix);
    cubeModel.Draw(*modelShader);
 
    DrawOrthoOfLight();
-   DebugDepthMap();
+   //DebugDepthMap();
 }
 
 void GamePlayWindowState::DrawOrthoOfLight()

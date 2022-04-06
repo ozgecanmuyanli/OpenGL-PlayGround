@@ -40,6 +40,7 @@ public:
    void DrawShadowMapScene();
    unsigned int LoadCubemap(std::vector<std::string> faces);
    void DrawCubemap();
+   void DrawFog(Shader* shaderProgram);
 
 private:
    Camera* camera;
@@ -67,7 +68,7 @@ private:
    glm::mat4 sceneProjectionMatrix, sceneViewMatrix;
    glm::mat4 cubeModelMatrix;
 
-   const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+   const unsigned int SHADOW_WIDTH = 12000, SHADOW_HEIGHT = 12000;
    unsigned int depthMap;
    unsigned int depthMapFBO;
    glm::mat4 lightSpaceMatrix;
