@@ -25,29 +25,31 @@ In this section, I prepared a series of rendered images from my OpenGL journey.
 
 - **Hello triangle!**
   
-Triangle is drawn in Normalized Device Coordinates.
+Triangle is drawn in Normalized Device Coordinates. The vertices are sent to shaders using VBO. 
+The color of the triangle is decided in fragment shader and given as output with FragColor function.
 
 ![triangle](Outputs/triangle.PNG)
 
 - **Textures and Basic Lighting**
   
-Indexed drawing is implemented to draw a quad with a texture on it. Basic lighting 
-calculations are applied according to a given point light position in fragment shader.
+Indexed drawing is implemented to draw a quad with a texture on it. Per-fragment lighting 
+is applied according to a given point light position in fragment shader.
 
 ![texture](Outputs/texture.PNG)
 
 - **Random Squares**
   
-Colored squares are drawn using indexed drawing with a point light. The model matrices of 
-squares are generated from random scale, rotate and translate values. Color codes are also 
-random uniform values.
+Colored squares are drawn using indexed drawing. A point light is implemented for the white background. 
+The model matrices of squares are generated from random scale, rotate and translate values. Color codes 
+are also random uniform values.
 
 ![random_squares_with_moving_light](Outputs/random_squares_with_moving_light.PNG)
 
 - **3D transformations**
   
 3D cube objects are drawn and they are translated using random model matrices. The scene 
-is rendered from the camera’s point of view and perspective projection is impelemented.
+is rendered from the camera’s point of view and perspective projection is impelemented. 
+Mipmap is generated while sampling texture for cube objects.
 
 ![3D](Outputs/3D.PNG)
 
@@ -75,8 +77,9 @@ hegiht map texture              | terrain
 
 - **3D grassland from a single grass texture**
   
-Two grass textures are drawn on the same center, at 90 degrees angle to each other on the z-axis. This 
-structure is scratched enough to cover the whole floor. Therefore, a grassland image is obtained.
+Two grass textures are drawn on the same center, at 90 degrees angle to each other on the z-axis. 
+The white part of grass texture is cutout using alpha testing method. This structure is scratched 
+enough to cover the whole floor. Therefore, a grassland image is obtained.
 
 single grass texture         | 3D grassland
 :---------------------------:|:-------------------------------:
@@ -129,13 +132,6 @@ Ambient, specular and diffuse lighting components are combined.
 
 ![directional_light](Outputs/directional_light.PNG)
 
-- **Depth Test**
-  
-A value in the depth buffer corresponds to the depth of a fragment clamped to [0,1] from the 
-camera’s point of view.
-
-![depth_test](Outputs/depth_test.PNG)
-
 - **Model Loading with Assimp**
   
 Sponza model is loaded using Assimp library. Tangent space calculations are also added into Assimp 
@@ -143,6 +139,20 @@ for further applications.
 
 ![model_loading_with_assimp](Outputs/model_loading_with_assimp.PNG)
 ![model_loading_with_assimp_2](Outputs/model_loading_with_assimp_2.PNG)
+
+
+- **Depth Test**
+  
+A value in the depth buffer corresponds to the depth of a fragment clamped to [0,1] from the 
+camera’s point of view.
+
+![depth_test](Outputs/depth_test.PNG)
+
+Fog effect is shown using depth buffer.
+
+![fog](Outputs/sis6.PNG)
+
+![fog](Outputs/sis5.PNG)
 
 - **Depth Map**
   
@@ -159,18 +169,30 @@ normal vectors, it has a different directional normal vector per fragment.
 
 ![normal_mapping_3](Outputs/normal_mapping_3.PNG)
 
-Normal mapping for backpack                       |
+Normal mapping for backpack.
+
+Before Normal Map                                    | After Normal Map
+:---------------------------------------------------:|:-------------------------------------------------------:
+![before_normal_map](Outputs/before_normal_map.png)  | ![after_normal_map](Outputs/normal_mapping_1.PNG)
+                                                     
+Detailed version                                  |                                                     
 :------------------------------------------------:|
-![normal_mapping_1](Outputs/normal_mapping_1.PNG) |
-![normal_mapping_2](Outputs/normal_mapping_2.PNG) 
+![normal_mapping_1](Outputs/normal_mapping_2.PNG) 
 
 - **Shadow Mapping**
   
-Shadow of backpack model is drawn. First, depth values are drawn to the FBO depthMap texture. It is shown in the 
-left top corner of the window in screen space. Then the scene is drawn two times. The first time, the scene is 
-drawn from the light's view and the second time, it is drawn from the camera's point of view.
+Shadow of backpack model is drawn. First, depth values are drawn to the FBO depthMap texture from the light's view. 
+It is shown in the left top corner of the window in screen space. Then the scene is drawn from the camera's point of view.
 
 ![shadow_mapping](Outputs/shadow_mapping.PNG)
+
+**Shadowed Sponza with mipmap and MSAA.**
+![shadow_msaa_mipmap](Outputs/shadow_msaa_mipmap.PNG)
+
+**Shadowed Sponza with fog effect.**
+![shadow_msaa_mipmap](Outputs/new_sponza7.PNG)
+
+![shadow_msaa_mipmap](Outputs/new_sponza9.PNG)
 
 - **Cube Map**
   
