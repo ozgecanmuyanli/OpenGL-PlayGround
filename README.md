@@ -173,10 +173,10 @@ Normal mapping for backpack.
 
 Before Normal Map                                    | After Normal Map
 :---------------------------------------------------:|:-------------------------------------------------------:
-![before_normal_map](Outputs/before_normal_map.png)  | ![after_normal_map](Outputs/normal_mapping_1.PNG)
+![before_normal_map](Outputs/normal_mappingsiz.PNG)  | ![after_normal_map](Outputs/normal_mapping_1.PNG)
                                                      
-Detailed version                                  |                                                     
-:------------------------------------------------:|
+Detailed version 
+
 ![normal_mapping_1](Outputs/normal_mapping_2.PNG) 
 
 - **Shadow Mapping**
