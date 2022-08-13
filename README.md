@@ -94,20 +94,10 @@ Transparency is implemented according to 0.5 alpha value within window object.
 - **Interface**
   
   Interfaces resembling game screens are drawn using orthographic projection. No external GUI application
- is used.
+ is used. When the buttons are clicked, a texture with no text on it and lighting applied in the middle 
+ is drawn.
 
- ![interfaces](outputs/INTERFACES.gif)
-
-
-- **Button Click Effect**
-  
-  When the buttons are clicked, a texture with no text on it and lighting applied in the middle 
-  is drawn.
-
-Button Click                                      | Button Click                                
-:------------------------------------------------:|:---------------------------------------------:
-![click_effect](Outputs/click_effect.PNG)         | ![click_effect_2](Outputs/click_effect_2.PNG) 
-![click_effect_4](Outputs/click_effect_4.PNG)     | ![click_effect_3](Outputs/click_effect_3.PNG) 
+ ![interfaces](Outputs/INTERFACES.gif)
 
 - **Generate Random Map**
 
