@@ -96,11 +96,8 @@ Transparency is implemented according to 0.5 alpha value within window object.
   Interfaces resembling game screens are drawn using orthographic projection. No external GUI application
  is used.
 
-Names          | Screen Images                                
-:-------------:|:--------------------------------------------------:
-Main Menu      | ![main_menu_window](Outputs/main_menu_window.PNG)
-Credits        | ![credits_window](Outputs/credits_window.PNG)
-Pause          | ![pause_window](Outputs/pause_window.PNG)
+ ![interfaces](outputs/INTERFACES.gif)
+
 
 - **Button Click Effect**
   
