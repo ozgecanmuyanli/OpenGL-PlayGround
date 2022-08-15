@@ -4,7 +4,7 @@ OpenGL Playground repository for tracking my progress in learning OpenGL.
 ## COMPILATION: BUILD PROJECT FOR VS 2019
     rm -rf <build_folder>
     mkdir <build_folder>
-    cmake -G "Visual Stuido 16" -S . -B <build_folder>
+    cmake -G "Visual Studio 16" -S . -B <build_folder>
     cmake --build <build_folder>
 
 ### Import Assimp Lib
@@ -52,28 +52,6 @@ is rendered from the camera’s point of view and perspective projection is impe
 Mipmap is generated while sampling texture for cube objects.
 
 ![3D](Outputs/3D.PNG)
-
-- **3D Terrain using height map texture**
-  
-  Height map represents the elevation values of the terrain. The terrain is drawn on grids and it 
-  is colored according to this elevation value.
-
-hegiht map texture              | terrain
-:------------------------------:|:--------------------------------:
-![grass](Textures/E022N42.bmp)  | ![terrain](Outputs/terrain.PNG)
-
-- **Clouds from noise texture**
-  
-  Dark parts of the noise texture is discarded to draw a cloud-like image.
-
-![terrain_and_clouds_from_noise](Outputs/terrain_and_clouds_from_noise.PNG)
-
-- **Framebuffer**
-  
-  The scene is drawn from a different perspective on the framebuffer by changing the view matrix. 
-  It is shown in the upper left corner.
-
-![framebuffer](Outputs/framebuffer.PNG)
 
 - **3D grassland from a single grass texture**
   
